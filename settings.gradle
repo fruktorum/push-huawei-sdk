@@ -1,2 +1,0 @@
-include ':push-huawei-sdk'
-rootProject.name = "push-huawei-sdk"
