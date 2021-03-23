@@ -21,10 +21,10 @@
 
         <service
             android:name=".DevinoSdkPushService"
-            android:enabled="true"
-            android:exported="true">
+            android:exported="true"
+            android:enabled="true">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.huawei.push.action.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
