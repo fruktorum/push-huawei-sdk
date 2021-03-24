@@ -3,6 +3,7 @@ package com.devinotele.devinosdk.sdk;
 
 import android.text.TextUtils;
 
+import com.huawei.agconnect.config.AGConnectServicesConfig;
 import com.huawei.hms.aaid.HmsInstanceId;
 import com.huawei.hms.common.ApiException;
 
@@ -16,12 +17,13 @@ class SaveTokenUseCase extends BaseUC {
         logsCallback = callback;
     }
 
-    void run(String agAppId, HmsInstanceId hmsInstanceId) {
+    void run(AGConnectServicesConfig config, HmsInstanceId hmsInstanceId) {
         new Thread() {
             @Override
             public void run() {
                 try {
                     String tokenScope = "HCM";
+                    String agAppId = config.getString("client/app_id");
                     String token = hmsInstanceId.getToken(agAppId, tokenScope);
 
                     if (!TextUtils.isEmpty(token)) {

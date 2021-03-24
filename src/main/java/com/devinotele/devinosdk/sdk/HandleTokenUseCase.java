@@ -4,6 +4,7 @@ package com.devinotele.devinosdk.sdk;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.huawei.agconnect.config.AGConnectServicesConfig;
 import com.huawei.hms.aaid.HmsInstanceId;
 import com.huawei.hms.common.ApiException;
 
@@ -26,7 +27,7 @@ class HandleTokenUseCase extends BaseUC {
         this.email = email;
     }
 
-    void run(String agAppId, HmsInstanceId hmsInstanceId) {
+    void run(AGConnectServicesConfig config, HmsInstanceId hmsInstanceId) {
         if (sharedPrefsHelper.getBoolean(SharedPrefsHelper.KEY_TOKEN_REGISTERED))
             registerUser(email, phone);
         else {
@@ -35,6 +36,7 @@ class HandleTokenUseCase extends BaseUC {
                 public void run() {
                     try {
                         String tokenScope = "HCM";
+                        String agAppId = config.getString("client/app_id");
                         String token = hmsInstanceId.getToken(agAppId, tokenScope);
 
                         if (!TextUtils.isEmpty(token)) {

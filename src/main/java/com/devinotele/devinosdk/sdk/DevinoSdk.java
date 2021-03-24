@@ -7,6 +7,7 @@ import android.net.Uri;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.google.gson.JsonObject;
+import com.huawei.agconnect.config.AGConnectServicesConfig;
 import com.huawei.hms.aaid.HmsInstanceId;
 
 import java.util.HashMap;
@@ -25,11 +26,11 @@ public class DevinoSdk {
     private static DevinoSdk instance;
     private String applicationKey;
     private String applicationId;
-    private String agAppId;
     private String appVersion;
     private Boolean isInitedProperly;
     private HelpersPackage hp;
     private HmsInstanceId hmsInstanceId;
+    private AGConnectServicesConfig config;
     private Integer geoFrequency;
     private Integer geoMode;
     private DevinoLogsCallback logsCallback = getEmptyCallback();
@@ -47,22 +48,23 @@ public class DevinoSdk {
     public static class Builder {
 
         Context ctx;
-        String key, applicationId, agAppId;
+        String key, applicationId;
         HmsInstanceId hmsInstanceId;
+        AGConnectServicesConfig config;
 
-        public Builder(Context ctx, String key, String applicationId, HmsInstanceId hmsInstanceId, String agAppId) {
+        public Builder(Context ctx, String key, String applicationId, HmsInstanceId hmsInstanceId, AGConnectServicesConfig config) {
             this.ctx = ctx;
             this.key = key;
             this.applicationId = applicationId;
             this.hmsInstanceId = hmsInstanceId;
-            this.agAppId = agAppId;
+            this.config = config;
             instance = new DevinoSdk();
         }
 
         public void build() {
             instance.applicationKey = key;
             instance.applicationId = applicationId;
-            instance.agAppId = agAppId;
+            instance.config = config;
             instance.hp = new HelpersPackage();
             instance.hp.setSharedPrefsHelper(new SharedPrefsHelper(ctx.getSharedPreferences("", Context.MODE_PRIVATE)));
             instance.hp.setNotificationsHelper(new NotificationsHelper(ctx));
@@ -117,7 +119,7 @@ public class DevinoSdk {
      * @param email user email
      */
     public void register(Context context, String phone, String email) {
-        handleToken(agAppId, hmsInstanceId, logsCallback, phone, email);
+        handleToken(config, hmsInstanceId, logsCallback, phone, email);
     }
 
     /**
@@ -278,10 +280,10 @@ public class DevinoSdk {
         return instance.customSound;
     }
 
-    private static void handleToken(String agAppId, HmsInstanceId hmsInstanceId,
+    private static void handleToken(AGConnectServicesConfig config, HmsInstanceId hmsInstanceId,
                                     DevinoLogsCallback callback, String phone, String email) {
         HandleTokenUseCase useCase = new HandleTokenUseCase(instance.hp, callback, phone, email);
-        useCase.run(agAppId, hmsInstanceId);
+        useCase.run(config, hmsInstanceId);
     }
 
     private boolean isRegistered() {
@@ -290,7 +292,7 @@ public class DevinoSdk {
 
     private void saveToken(Context context, HmsInstanceId hmsInstanceId, DevinoLogsCallback callback) {
         SaveTokenUseCase useCase = new SaveTokenUseCase(instance.hp, callback);
-        useCase.run(agAppId, hmsInstanceId);
+        useCase.run(config, hmsInstanceId);
     }
 
     private DevinoLogsCallback getEmptyCallback() {
