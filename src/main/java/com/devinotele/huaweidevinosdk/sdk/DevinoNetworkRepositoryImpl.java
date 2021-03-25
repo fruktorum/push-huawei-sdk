@@ -1,7 +1,12 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
+import android.util.SparseIntArray;
+
 import com.google.gson.JsonObject;
 
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -16,31 +21,34 @@ class DevinoNetworkRepositoryImpl implements DevinoNetworkRepository {
 
     private RetrofitHelper retrofitHelper;
     private volatile DevinoLogsCallback callback;
-    HashMap<Integer, Integer> retryMap = new HashMap<>();
+    SparseIntArray retryMap = new SparseIntArray();
 
     DevinoNetworkRepositoryImpl(String apiKey, String applicationId, String token, DevinoLogsCallback callback) {
         retrofitHelper = new RetrofitHelper(apiKey, applicationId, token);
         this.callback = callback;
     }
 
-    private <T> Observable<T> retryOnHttpError(Observable<T> source) {
-        return retryOnHttpError(60L, source);
-    }
+    private final long[] intervals = {1, 1, 5, 5, 10, 30};
 
-    private <T> Observable<T> retryOnHttpError(Long interval, Observable<T> source) {
+    private <T> Observable<T> retryOnHttpError(Observable<T> source) {
         retryMap.put(source.hashCode(), 0);
         return source.retryWhen(errors ->
                 errors.flatMap(error -> {
-                    callback.onMessageLogged("ERROR");
-                    boolean retryCondition = error instanceof HttpException && codeToRepeat(((HttpException) error).code());
-                    int retryCount = 3;
-                    if (retryMap.get(source.hashCode()) != null)
-                        retryCount = retryMap.get(source.hashCode());
-                    if (retryCount < 3 && retryCondition) {
+                    boolean retryCondition = (error instanceof HttpException && codeToRepeat(((HttpException) error).code()))
+                            || error instanceof SocketTimeoutException
+                            || error instanceof ConnectException
+                            || error instanceof UnknownHostException;
+
+                    int retryCount = retryMap.get(source.hashCode(), intervals.length);
+
+                    if (retryCount < intervals.length && retryCondition) {
+                        callback.onMessageLogged("Retrying to connect: try $retryCount Cause: ${error.message!!}");
                         retryMap.put(source.hashCode(), retryCount + 1);
-                        return Observable.timer(interval, TimeUnit.SECONDS);
+                        return Observable.timer(
+                                intervals[retryCount],
+                                TimeUnit.SECONDS
+                        );
                     }
-                    // For anything else, don't retry
                     return Observable.error(error);
                 })
         );
