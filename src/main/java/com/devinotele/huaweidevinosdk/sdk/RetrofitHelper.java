@@ -95,7 +95,7 @@ class RetrofitHelper {
     }
 
     HashMap<String, Object> addCustomData(HashMap<String, Object> body) {
-        body.put("platform", "ANDROID");
+        body.put("platform", "huawei");
         body.put("osVersion", String.valueOf(Build.VERSION.SDK_INT));
         body.put("language", Locale.getDefault().getISO3Language().substring(0, 2));
         return body;
