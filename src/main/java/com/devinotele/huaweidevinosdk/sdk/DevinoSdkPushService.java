@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -21,6 +22,7 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.huawei.hms.push.HmsMessageService;
 import com.huawei.hms.push.RemoteMessage;
+import com.squareup.picasso.Picasso;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -40,7 +42,7 @@ public class DevinoSdkPushService extends HmsMessageService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
 
-        if (remoteMessage.getDataOfMap().size() == 0) {
+        if (remoteMessage.getDataOfMap().size() > 0) {
 
             Map<String, String> data = remoteMessage.getDataOfMap();
 
@@ -120,16 +122,24 @@ public class DevinoSdkPushService extends HmsMessageService {
         }
 
         if (largeIcon != null) {
-            Bitmap bitmap = ImageDownloader.getBitmapFromURL(largeIcon);
-            if (bigPicture)
-                builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(bitmap));
-            builder.setLargeIcon(bitmap);
-        } else
+            Picasso.get().load(largeIcon).into(new ImageBitmapTarget() {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    if (bigPicture)
+                        builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(bitmap));
+                    builder.setLargeIcon(bitmap);
+                    showNotification(builder);
+                }
 
+                @Override
+                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                    showNotification(builder);
+                }
+            });
+        } else {
             playRingtone(sound);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.notify(113, builder.build());
+            showNotification(builder);
+        }
 
     }
 
@@ -161,6 +171,11 @@ public class DevinoSdkPushService extends HmsMessageService {
         } catch (Exception ex) {
             return defaultNotificationIcon;
         }
+    }
+
+    private void showNotification(NotificationCompat.Builder builder) {
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(113, builder.build());
     }
 
     protected class PushButton {

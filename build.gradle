@@ -75,4 +75,5 @@ dependencies {
     implementation 'com.huawei.hms:push:5.0.4.302'
     implementation 'com.huawei.hms:location:5.0.5.300'
     implementation 'com.huawei.agconnect:agconnect-core:1.4.0.300'
+    implementation 'com.squareup.picasso:picasso:2.71828'
 }
