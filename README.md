@@ -202,5 +202,3 @@ SevenTechSdk.getInstance().checkSubscription()
         throwable -> //do what you need
     )
 ```
-
-[![](https://jitpack.io/v/devinotelecom/push-android-sdk.svg)](https://jitpack.io/#devinotelecom/push-android-sdk)
