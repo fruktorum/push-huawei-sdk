@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.devinotele.huaweidevinosdk.sdk">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application
+        android:usesCleartextTraffic="true"
+        tools:targetApi="m">
+
+        <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoPushReceiver" />
+        <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoCancelReceiver" />
+        <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoLocationReceiver">
+            <intent-filter>
+                <action android:name="com.devinotele.devinosdk.ALARM" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name="com.devinotele.huaweidevinosdk.sdk.DevinoSdkPushService"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.huawei.push.action.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="com.devinotele.huaweidevinosdk.sdk.DevinoLocationIntentService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+    </application>
+</manifest>
