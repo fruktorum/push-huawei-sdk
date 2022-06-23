@@ -5,6 +5,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -13,7 +14,9 @@
 
         <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoPushReceiver" />
         <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoCancelReceiver" />
-        <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoLocationReceiver">
+        <receiver
+            android:name="com.devinotele.huaweidevinosdk.sdk.DevinoLocationReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.devinotele.devinosdk.ALARM" />
             </intent-filter>
@@ -21,8 +24,8 @@
 
         <service
             android:name="com.devinotele.huaweidevinosdk.sdk.DevinoSdkPushService"
-            android:exported="true"
-            android:enabled="true">
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.huawei.push.action.MESSAGING_EVENT" />
             </intent-filter>
