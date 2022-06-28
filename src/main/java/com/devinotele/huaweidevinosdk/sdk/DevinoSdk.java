@@ -10,6 +10,7 @@ import com.huawei.hms.aaid.HmsInstanceId;
 
 import java.util.HashMap;
 
+import androidx.annotation.ColorInt;
 import androidx.core.app.NotificationManagerCompat;
 import io.reactivex.Observable;
 
@@ -47,14 +48,15 @@ public class DevinoSdk {
     public static class Builder {
 
         Context ctx;
-        String key, applicationId;
+        String key, applicationId, appVersion;
         HmsInstanceId hmsInstanceId;
         AGConnectOptions connectOptions;
 
-        public Builder(Context ctx, String key, String applicationId, HmsInstanceId hmsInstanceId, AGConnectOptions connectOptions) {
+        public Builder(Context ctx, String key, String applicationId, String appVersion, HmsInstanceId hmsInstanceId, AGConnectOptions connectOptions) {
             this.ctx = ctx;
             this.key = key;
             this.applicationId = applicationId;
+            this.appVersion = appVersion;
             this.hmsInstanceId = hmsInstanceId;
             this.connectOptions = connectOptions;
             instance = new DevinoSdk();
@@ -63,6 +65,7 @@ public class DevinoSdk {
         public void build() {
             instance.applicationKey = key;
             instance.applicationId = applicationId;
+            instance.appVersion = appVersion;
             instance.connectOptions = connectOptions;
             instance.hp = new HelpersPackage();
             instance.hp.setSharedPrefsHelper(new SharedPrefsHelper(ctx.getSharedPreferences("", Context.MODE_PRIVATE)));
@@ -126,7 +129,7 @@ public class DevinoSdk {
      */
     public void appStarted() {
         AppStartedUseCase useCase = new AppStartedUseCase(instance.hp, logsCallback);
-        useCase.run("appVersion???");
+        useCase.run(appVersion);
     }
 
     /**
@@ -270,6 +273,15 @@ public class DevinoSdk {
         DevinoSdkPushService.defaultNotificationIcon = icon;
     }
 
+    /**
+     * Set default color of notification small icon
+     *
+     * @param color color of icon
+     */
+    public void setDefaultNotificationIconColor(@ColorInt int color) {
+        DevinoSdkPushService.defaultNotificationIconColor = color;
+    }
+
     void hideNotification(Context context) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.cancelAll();
@@ -298,10 +310,9 @@ public class DevinoSdk {
         return message -> System.out.println("Devino SDK event (logs are disabled).");
     }
 
-    class PushStatus {
+    static class PushStatus {
         static final String DELIVERED = "DELIVERED";
         static final String OPENED = "OPENED";
         static final String CANCELED = "CANCELED";
     }
-
 }

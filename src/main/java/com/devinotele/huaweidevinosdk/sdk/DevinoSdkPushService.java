@@ -1,5 +1,6 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -13,10 +14,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 
-import androidx.annotation.DrawableRes;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
@@ -28,6 +25,11 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 public class DevinoSdkPushService extends HmsMessageService {
 
     Gson gson = new Gson();
@@ -37,11 +39,13 @@ public class DevinoSdkPushService extends HmsMessageService {
     @DrawableRes
     static Integer defaultNotificationIcon = R.drawable.ic_grey_circle;
 
+    @ColorInt
+    static Integer defaultNotificationIconColor = 0x333333;
+
     private static final int RESOURCE_NOT_FOUND = 0;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-
         if (remoteMessage.getDataOfMap().size() > 0) {
 
             Map<String, String> data = remoteMessage.getDataOfMap();
@@ -52,6 +56,7 @@ public class DevinoSdkPushService extends HmsMessageService {
 
             String image = data.get("image");
             String icon = data.get("smallIcon");
+            String iconColor = data.get("iconColor");
             String title = data.get("title");
             String body = data.get("body");
             String action = data.get("action");
@@ -64,7 +69,7 @@ public class DevinoSdkPushService extends HmsMessageService {
 
             boolean isSilent = "true".equalsIgnoreCase(data.get("silentPush"));
             if (!isSilent) {
-                showSimpleNotification(title, body, icon, image, buttons, true, sound, pushId, action);
+                showSimpleNotification(title, body, icon, iconColor, image, buttons, true, sound, pushId, action);
             }
 
             DevinoSdk.getInstance().pushEvent(pushId, DevinoSdk.PushStatus.DELIVERED, null);
@@ -72,7 +77,8 @@ public class DevinoSdkPushService extends HmsMessageService {
 
     }
 
-    public void showSimpleNotification(String title, String text, String smallIcon, String largeIcon, List<PushButton> buttons, Boolean bigPicture, Uri sound, String pushId, String action) {
+    @SuppressLint("NotificationTrampoline")
+    public void showSimpleNotification(String title, String text, String smallIcon, String iconColor, String largeIcon, List<PushButton> buttons, Boolean bigPicture, Uri sound, String pushId, String action) {
 
         Intent broadcastIntent = new Intent(getApplicationContext(), DevinoPushReceiver.class);
         broadcastIntent.putExtra(DevinoPushReceiver.KEY_PUSH_ID, pushId);
@@ -85,8 +91,8 @@ public class DevinoSdkPushService extends HmsMessageService {
         Intent deleteIntent = new Intent(getApplicationContext(), DevinoCancelReceiver.class);
         deleteIntent.putExtra(DevinoPushReceiver.KEY_PUSH_ID, pushId);
 
-        PendingIntent defaultPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), broadcastIntent.hashCode(), broadcastIntent, PendingIntent.FLAG_ONE_SHOT);
-        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(getApplicationContext(), deleteIntent.hashCode(), deleteIntent, PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent defaultPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), broadcastIntent.hashCode(), broadcastIntent, PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(getApplicationContext(), deleteIntent.hashCode(), deleteIntent, PendingIntent.FLAG_IMMUTABLE);
 
         createNotificationChannel();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
@@ -103,6 +109,17 @@ public class DevinoSdkPushService extends HmsMessageService {
             builder.setSmallIcon(getIconDrawableId(getApplicationContext(), smallIcon));
         } else builder.setSmallIcon(defaultNotificationIcon);
 
+        if (iconColor != null) {
+            try {
+                Integer color = Integer.getInteger(iconColor);
+                if (color != null) builder.setColor(color);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            builder.setColor(defaultNotificationIconColor);
+        }
+
         if (buttons != null && buttons.size() > 0) {
             for (PushButton button : buttons) {
                 if (button.text != null) {
@@ -110,7 +127,7 @@ public class DevinoSdkPushService extends HmsMessageService {
                     intent.putExtra(DevinoPushReceiver.KEY_DEEPLINK, button.deeplink);
                     intent.putExtra(DevinoPushReceiver.KEY_PICTURE, button.pictureLink);
                     intent.putExtra(DevinoPushReceiver.KEY_PUSH_ID, pushId);
-                    PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), button.hashCode(), intent, PendingIntent.FLAG_ONE_SHOT);
+                    PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), button.hashCode(), intent, PendingIntent.FLAG_IMMUTABLE);
                     builder.addAction(R.drawable.ic_grey_circle, button.text, pendingIntent);
                 }
             }

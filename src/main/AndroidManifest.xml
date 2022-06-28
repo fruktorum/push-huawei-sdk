@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:usesCleartextTraffic="true"
@@ -14,6 +15,7 @@
 
         <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoPushReceiver" />
         <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoCancelReceiver" />
+
         <receiver
             android:name="com.devinotele.huaweidevinosdk.sdk.DevinoLocationReceiver"
             android:exported="true">
@@ -35,6 +37,5 @@
             android:name="com.devinotele.huaweidevinosdk.sdk.DevinoLocationIntentService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
-
     </application>
 </manifest>
