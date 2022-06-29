@@ -44,23 +44,32 @@ public class DevinoExampleApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        AGConnectServicesConfig config = AGConnectServicesConfig.fromContext(this);
+        AGConnectOptions connectOptions = new AGConnectOptionsBuilder().build(this);
         HmsInstanceId hmsInstanceId = HmsInstanceId.getInstance(this);
         String appId = "Application ID";
+        String appVersion = BuildConfig.VERSION_NAME;
 
-        DevinoSdk.Builder builder = new DevinoSdk.Builder(this, devinoSecretKey, appId, hmsInstanceId, config);
+        DevinoSdk.Builder builder = new DevinoSdk.Builder(this, devinoSecretKey, appId, appVersion, hmsInstanceId, connectOptions);
         builder.build();
     }
 }
 ```
 
-Also you can override default push action scheme and host.
-If not redefined, "devino://default-push-action" will be used.
+Also you can override default push action scheme and host. If not redefined, "devino:
+//default-push-action" will be used.
 
 ```
 DevinoSdk.getInstance().setDefaultDeepLinkAction("scheme", "host");
 ```
 
+Also you can override default notification icon and icon color
+
+```
+DevinoSdk.getInstance().setDefaultNotificationIcon(drawable);
+DevinoSdk.getInstance().setDefaultNotificationIconColor(colorInt);
+```
+
+Icon must have alpha transparency.
 
 ### Get sdk logs
 
@@ -190,13 +199,13 @@ DevinoSdk.getInstance().pushEvent(pushId, DevinoSdk.PushStatus.DELIVERED, null);
 
 True by default
 ```
-SevenTechSdk.getInstance().activateSubscription(true);
+DevinoSdk.getInstance().activateSubscription(true);
 ```
 
 ### Check notification subscription status
 Use rxJava and get subscription status in success json { "result": boolean }
 ```
-SevenTechSdk.getInstance().checkSubscription()
+DevinoSdk.getInstance().checkSubscription()
     .subscribe(
         json -> //do what you need,
         throwable -> //do what you need
