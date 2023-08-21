@@ -1,10 +1,10 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
+import java.util.HashMap;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.HttpException;
-
 
 class AppStartedUseCase extends BaseUC {
 
@@ -20,7 +20,9 @@ class AppStartedUseCase extends BaseUC {
         String token = sharedPrefsHelper.getString(SharedPrefsHelper.KEY_PUSH_TOKEN);
         if (token.length() > 1) {
             Boolean subscribed = sharedPrefsHelper.getBoolean(SharedPrefsHelper.KEY_SUBSCRIBED);
-            trackSubscription(networkRepository.appStarted(appVersion, subscribed)
+            HashMap<String, Object> customData =
+                    sharedPrefsHelper.getHashMap(SharedPrefsHelper.KEY_CUSTOM_DATA);
+            trackSubscription(networkRepository.appStarted(appVersion, subscribed, customData)
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
@@ -33,6 +35,8 @@ class AppStartedUseCase extends BaseUC {
                             }
                     )
             );
-        } else logsCallback.onMessageLogged("application has no push token yet");
+        } else {
+            logsCallback.onMessageLogged("application has no push token yet");
+        }
     }
 }

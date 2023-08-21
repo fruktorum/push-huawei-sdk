@@ -14,9 +14,10 @@ import io.reactivex.Single;
 
 class RetrofitHelper {
 
-    private DevinoApi devinoApi;
-    private String applicationId;
+    private final DevinoApi devinoApi;
+    private final String applicationId;
     private String token;
+    static final String PLATFORM_KEY = "HUAWEI";
 
     RetrofitHelper(String apiKey, String applicationId, String token) {
         devinoApi = RetrofitClientInstance.getRetrofitInstance(apiKey).create(DevinoApi.class);
@@ -28,17 +29,28 @@ class RetrofitHelper {
         this.token = token;
     }
 
-    Single<JsonObject> registerUser(String email, String phone, HashMap<String, Object> customData) {
+    Single<JsonObject> registerUser(
+            String email,
+            String phone,
+            HashMap<String, Object> customData
+    ) {
         HashMap<String, Object> body = getGenericBody();
         body.put("email", email);
         body.put("phone", phone);
-        if (customData != null) body.put("customData", customData);
+        body.put("platform", PLATFORM_KEY);
+        if (customData != null) {
+            body.put("customData", customData);
+        }
         return devinoApi.registerUser(token, body);
     }
 
-    Single<JsonObject> changeSubscription(Boolean subscribed) {
+    Single<JsonObject> changeSubscription(Boolean subscribed, HashMap<String, Object> customData) {
         HashMap<String, Object> body = getGenericBody();
         body.put("subscribed", subscribed);
+        body.put("platform", PLATFORM_KEY);
+        if (customData != null) {
+            body.put("customData", customData);
+        }
         return devinoApi.subscription(token, body);
     }
 
@@ -46,34 +58,62 @@ class RetrofitHelper {
         return devinoApi.getSubscriptionStatus(token, applicationId);
     }
 
-    Single<JsonObject> appStarted(Boolean subscribed, String appVersion) {
+    Single<JsonObject> appStarted(
+            Boolean subscribed,
+            String appVersion,
+            HashMap<String, Object> customData
+    ) {
         HashMap<String, Object> body = getGenericBody();
         body = addCustomData(body);
         body.put("appVersion", appVersion);
         body.put("subscribed", subscribed);
+        if (customData != null) {
+            body.put("customData", customData);
+        }
         return devinoApi.appStart(token, body);
     }
 
-    Single<JsonObject> customEvent(String eventName, HashMap<String, Object> eventData) {
+    Single<JsonObject> customEvent(
+            String eventName,
+            HashMap<String, Object> eventData,
+            HashMap<String, Object> customData
+    ) {
         HashMap<String, Object> body = getGenericBody();
         body.put("eventName", eventName);
         body.put("eventData", eventData);
+        body.put("platform", PLATFORM_KEY);
+        if (customData != null) {
+            body.put("customData", customData);
+        }
         return devinoApi.event(token, body);
     }
 
-    Single<JsonObject> geo(Double latitude, Double longitude) {
+    Single<JsonObject> geo(Double latitude, Double longitude, HashMap<String, Object> customData) {
         HashMap<String, Object> body = getGenericBody();
         body.put("latitude", latitude);
         body.put("longitude", longitude);
+        body.put("platform", PLATFORM_KEY);
+        if (customData != null) {
+            body.put("customData", customData);
+        }
         return devinoApi.geo(token, body);
     }
 
-    Single<JsonObject> pushEvent(String pushId, String actionType, String actionId) {
+    Single<JsonObject> pushEvent(
+            String pushId,
+            String actionType,
+            String actionId,
+            HashMap<String, Object> customData
+    ) {
         HashMap<String, Object> body = getGenericBody();
         body.put("pushToken", token);
         body.put("pushId", pushId);
         body.put("actionType", actionType);
         body.put("actionId", actionId);
+        body.put("platform", PLATFORM_KEY);
+        if (customData != null) {
+            body.put("customData", customData);
+        }
         return devinoApi.pushEvent(body);
     }
 
@@ -95,7 +135,7 @@ class RetrofitHelper {
     }
 
     HashMap<String, Object> addCustomData(HashMap<String, Object> body) {
-        body.put("platform", "huawei");
+        body.put("platform", PLATFORM_KEY);
         body.put("osVersion", String.valueOf(Build.VERSION.SDK_INT));
         body.put("language", Locale.getDefault().getISO3Language().substring(0, 2));
         return body;
