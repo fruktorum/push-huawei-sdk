@@ -1,11 +1,13 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -27,21 +29,18 @@ import java.util.Map;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 public class DevinoSdkPushService extends HmsMessageService {
 
     Gson gson = new Gson();
-    private String channelId = "devino_push";
-    private final int EXPANDED_TEXT_LENGTH = 49;
-
+    private final String channelId = "devino_push";
     @DrawableRes
     static Integer defaultNotificationIcon = R.drawable.ic_grey_circle;
-
     @ColorInt
     static Integer defaultNotificationIconColor = 0x333333;
-
     private static final int RESOURCE_NOT_FOUND = 0;
 
     @Override
@@ -125,7 +124,6 @@ public class DevinoSdkPushService extends HmsMessageService {
                 if (button.text != null) {
                     Intent intent = new Intent(this, DevinoPushReceiver.class);
                     intent.putExtra(DevinoPushReceiver.KEY_DEEPLINK, button.deeplink);
-                    intent.putExtra(DevinoPushReceiver.KEY_PICTURE, button.pictureLink);
                     intent.putExtra(DevinoPushReceiver.KEY_PUSH_ID, pushId);
                     PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), button.hashCode(), intent, PendingIntent.FLAG_IMMUTABLE);
                     builder.addAction(R.drawable.ic_grey_circle, button.text, pendingIntent);
@@ -133,6 +131,7 @@ public class DevinoSdkPushService extends HmsMessageService {
             }
         }
 
+        int EXPANDED_TEXT_LENGTH = 49;
         if (text.length() >= EXPANDED_TEXT_LENGTH) {
             builder.setStyle(new NotificationCompat.BigTextStyle()
                     .bigText(text));
@@ -192,6 +191,13 @@ public class DevinoSdkPushService extends HmsMessageService {
 
     private void showNotification(NotificationCompat.Builder builder) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED
+        ) {
+            // This permission are guaranteed in the app
+            // through the DevinoSdk.getInstance().requestNotificationPermission() method.
+            return;
+        }
         notificationManager.notify(113, builder.build());
     }
 

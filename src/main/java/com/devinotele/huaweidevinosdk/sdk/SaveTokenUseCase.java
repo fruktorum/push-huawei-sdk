@@ -27,19 +27,23 @@ class SaveTokenUseCase extends BaseUC {
                     String token = hmsInstanceId.getToken(agAppId, tokenScope);
 
                     if (!TextUtils.isEmpty(token)) {
-                        String persistedToken = sharedPrefsHelper.getString(SharedPrefsHelper.KEY_PUSH_TOKEN);
-
-                        if (!token.equals(persistedToken)) {
-                            sharedPrefsHelper.saveData(SharedPrefsHelper.KEY_PUSH_TOKEN, token);
-                            networkRepository.updateToken(token);
-                            logsCallback.onMessageLogged("Push token persisted\n" + token);
-                            DevinoSdk.getInstance().appStarted();
-                        }
+                        SaveTokenUseCase.this.run(token);
                     }
                 } catch (ApiException e) {
                     logsCallback.onMessageLogged("Push Kit Error: " + e.getMessage());
                 }
             }
         }.start();
+    }
+
+    void run (String token) {
+        String persistedToken = sharedPrefsHelper.getString(SharedPrefsHelper.KEY_PUSH_TOKEN);
+
+        if (!token.equals(persistedToken)) {
+            sharedPrefsHelper.saveData(SharedPrefsHelper.KEY_PUSH_TOKEN, token);
+            networkRepository.updateToken(token);
+            logsCallback.onMessageLogged("Push token persisted\n" + token);
+            DevinoSdk.getInstance().appStarted();
+        }
     }
 }

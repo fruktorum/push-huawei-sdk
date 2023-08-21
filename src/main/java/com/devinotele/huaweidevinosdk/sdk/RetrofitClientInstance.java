@@ -9,18 +9,24 @@ import retrofit2.converter.gson.GsonConverterFactory;
 class RetrofitClientInstance {
 
     private static Retrofit retrofit;
-    private static Retrofit firebaseRetrofit;
-    private static final String BASE_URL = "https://integrationapi.net/push/sdk/";
-    private static final String FIREBASE_URL = "https://fcm.googleapis.com/fcm/";
+    private static volatile String BASE_URL = "https://integrationapi.net/push/sdk/";
     private static OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 
+    public void setApiBaseUrl(String newApiBaseUrl) {
+        BASE_URL = newApiBaseUrl;
+        if (retrofit != null) retrofit = retrofit.newBuilder().baseUrl(BASE_URL).build();
+    }
 
     static Retrofit getRetrofitInstance(final String apiKey) {
         if (retrofit == null) {
 
+            String url = DevinoSdk.getInstance().getSavedBaseUrl();
+            if (url != null && !url.isEmpty()) {
+                BASE_URL = url;
+            }
+
             httpClient.addInterceptor(chain -> {
                 Request original = chain.request();
-
                 Request request = original.newBuilder()
                         .header("x-api-key", apiKey)
                         .header("Content-Type", "application/json")
@@ -39,31 +45,4 @@ class RetrofitClientInstance {
         }
         return retrofit;
     }
-
-    static Retrofit getFirebaseInstance(final String pushKey) {
-        if (firebaseRetrofit == null) {
-
-            httpClient.addInterceptor(chain -> {
-                Request original = chain.request();
-
-                Request request = original.newBuilder()
-                        .header("Authorization", pushKey)
-                        .header("Content-Type", "application/json")
-                        .method(original.method(), original.body())
-                        .build();
-
-                return chain.proceed(request);
-            });
-
-            firebaseRetrofit = new Retrofit.Builder()
-                    .baseUrl(FIREBASE_URL)
-                    .client(httpClient.build())
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-        }
-        return retrofit;
-    }
-
-
 }
