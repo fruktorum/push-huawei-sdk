@@ -31,7 +31,7 @@ public class DevinoSdk {
     private String applicationKey;
     private String applicationId;
     private String appVersion;
-    //private Boolean isInitedProperly;
+    private Boolean isInitedProperly;
     private HelpersPackage hp;
     private HmsInstanceId hmsInstanceId;
     private AGConnectOptions connectOptions;
@@ -74,22 +74,22 @@ public class DevinoSdk {
         }
 
         public void build() {
-            //instance.applicationKey = key;
-            //instance.applicationId = applicationId;
+            instance.applicationKey = key;
+            instance.applicationId = applicationId;
             instance.appVersion = appVersion;
-            //instance.connectOptions = connectOptions;
+            instance.connectOptions = connectOptions;
             instance.hp = new HelpersPackage();
             instance.hp.setSharedPrefsHelper(new SharedPrefsHelper(
                     ctx.getSharedPreferences("", Context.MODE_PRIVATE)
             ));
             instance.hp.setNotificationsHelper(new NotificationsHelper(ctx));
             instance.hp.setDevinoLocationHelper(new DevinoLocationHelper(ctx));
-            //instance.hmsInstanceId = hmsInstanceId;
-            //instance.isInitedProperly = true;
+            instance.hmsInstanceId = hmsInstanceId;
+            instance.isInitedProperly = true;
             instance.hp.getSharedPrefsHelper().saveData(SharedPrefsHelper.KEY_API_SECRET, key);
             instance.hp.setNetworkRepository(new DevinoNetworkRepositoryImpl(
-                            key,
-                            applicationId,
+                            instance.applicationKey,
+                            instance.applicationId,
                             instance.hp.getSharedPrefsHelper()
                                     .getString(SharedPrefsHelper.KEY_PUSH_TOKEN),
                             instance.logsCallback
@@ -135,7 +135,7 @@ public class DevinoSdk {
      * @param email user email
      */
     public void register(Context context, String phone, String email) {
-        handleToken(connectOptions, hmsInstanceId, logsCallback, phone, email);
+        handleToken(instance.connectOptions, instance.hmsInstanceId, logsCallback, phone, email);
     }
 
     /**
@@ -147,7 +147,7 @@ public class DevinoSdk {
     }
 
     /**
-     * Send any custon event
+     * Send any custom event
      *
      * @param eventName Event name
      * @param eventData Key-Value typed data
@@ -331,6 +331,10 @@ public class DevinoSdk {
         UpdateApiBaseUrlUseCase useCase = new UpdateApiBaseUrlUseCase(instance.hp, logsCallback);
         useCase.run(newBaseApiUrl, ctx);
 
+    }
+
+    public AGConnectOptions getAGConnectOptionsInstance() {
+        return instance.connectOptions;
     }
 
     public void updateToken(String pushToken) {

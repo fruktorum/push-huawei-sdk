@@ -1,6 +1,5 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
-
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -8,17 +7,18 @@ import com.huawei.agconnect.AGConnectOptions;
 import com.huawei.hms.aaid.HmsInstanceId;
 import com.huawei.hms.common.ApiException;
 
+import java.util.HashMap;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.HttpException;
 
-
 class HandleTokenUseCase extends BaseUC {
 
-
-    private DevinoLogsCallback logsCallback;
-    private String phone, email;
-    private String event = "register token (put) ";
+    private final DevinoLogsCallback logsCallback;
+    private final String phone;
+    private final String email;
+    private final String event = "register token (put) ";
 
     HandleTokenUseCase(HelpersPackage hp, DevinoLogsCallback callback, String phone, String email) {
         super(hp);
@@ -28,8 +28,11 @@ class HandleTokenUseCase extends BaseUC {
     }
 
     void run(AGConnectOptions connectOptions, HmsInstanceId hmsInstanceId) {
-        if (sharedPrefsHelper.getBoolean(SharedPrefsHelper.KEY_TOKEN_REGISTERED))
-            registerUser(email, phone);
+        HashMap<String, Object> customData =
+                sharedPrefsHelper.getHashMap(SharedPrefsHelper.KEY_CUSTOM_DATA);
+        if (sharedPrefsHelper.getBoolean(SharedPrefsHelper.KEY_TOKEN_REGISTERED)) {
+            registerUser(email, phone, customData);
+        }
         else {
             new Thread() {
                 @Override
@@ -43,7 +46,7 @@ class HandleTokenUseCase extends BaseUC {
                             Log.d("TOKEN", token);
                             sharedPrefsHelper.saveData(SharedPrefsHelper.KEY_PUSH_TOKEN, token);
                             DevinoSdk.getInstance().appStarted();
-                            registerUser(email, phone);
+                            registerUser(email, phone, customData);
                         }
                     } catch (ApiException e) {
                         logsCallback.onMessageLogged("Push Kit Error: " + e.getMessage());
@@ -53,9 +56,9 @@ class HandleTokenUseCase extends BaseUC {
         }
     }
 
-    private void registerUser(String email, String phone) {
+    private void registerUser(String email, String phone, HashMap<String, Object> customData) {
 
-        trackSubscription(networkRepository.registerUser(email, phone)
+        trackSubscription(networkRepository.registerUser(email, phone, customData)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(

@@ -18,11 +18,16 @@ import retrofit2.HttpException;
 
 class DevinoNetworkRepositoryImpl implements DevinoNetworkRepository {
 
-    private RetrofitHelper retrofitHelper;
-    private volatile DevinoLogsCallback callback;
+    private final RetrofitHelper retrofitHelper;
+    private final DevinoLogsCallback callback;
     SparseIntArray retryMap = new SparseIntArray();
 
-    DevinoNetworkRepositoryImpl(String apiKey, String applicationId, String token, DevinoLogsCallback callback) {
+    DevinoNetworkRepositoryImpl(
+            String apiKey,
+            String applicationId,
+            String token,
+            DevinoLogsCallback callback
+    ) {
         retrofitHelper = new RetrofitHelper(apiKey, applicationId, token);
         this.callback = callback;
     }

@@ -133,21 +133,6 @@ public class DevinoSdkPushService extends HmsMessageService {
             Integer badgeNumber
     ) {
 
-        /*Intent broadcastIntent = new Intent(getApplicationContext(), DevinoPushReceiver.class);
-        broadcastIntent.putExtra(DevinoPushReceiver.KEY_PUSH_ID, pushId);
-        if (action != null) {
-            broadcastIntent.putExtra(DevinoPushReceiver.KEY_DEEPLINK, action);
-        } else
-            broadcastIntent.putExtra(DevinoPushReceiver.KEY_DEEPLINK, DevinoPushReceiver.KEY_DEFAULT_ACTION);
-
-
-        Intent deleteIntent = new Intent(getApplicationContext(), DevinoCancelReceiver.class);
-        deleteIntent.putExtra(DevinoPushReceiver.KEY_PUSH_ID, pushId);
-
-        PendingIntent defaultPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), broadcastIntent.hashCode(), broadcastIntent, PendingIntent.FLAG_IMMUTABLE);
-        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(getApplicationContext(), deleteIntent.hashCode(), deleteIntent, PendingIntent.FLAG_IMMUTABLE);
-*/
-
         Intent broadcastIntent = new Intent(getApplicationContext(), DevinoPushReceiver.class);
         broadcastIntent.putExtra(DevinoPushReceiver.KEY_PUSH_ID, pushId);
         if (action != null) {
@@ -234,26 +219,6 @@ public class DevinoSdkPushService extends HmsMessageService {
                     .bigText(text));
         }
 
-        /*if (largeIcon != null) {
-            Picasso.get().load(largeIcon).into(new ImageBitmapTarget() {
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    if (bigPicture)
-                        builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(bitmap));
-                    builder.setLargeIcon(bitmap);
-                    showNotification(builder);
-                }
-
-                @Override
-                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-                    showNotification(builder);
-                }
-            });
-        } else {
-            playRingtone(sound);
-            showNotification(builder);
-        }*/
-
         if (largeIcon != null) {
             Bitmap bitmap = ImageDownloader.getBitmapFromURL(largeIcon);
             if (bigPicture) {
@@ -265,18 +230,6 @@ public class DevinoSdkPushService extends HmsMessageService {
         if (soundUri != null) {
             playRingtone(soundUri);
         }
-
-        /*if (buttons != null && buttons.size() > 0) {
-            for (PushButton button : buttons) {
-                if (button.text != null) {
-                    Intent intent = new Intent(this, DevinoPushReceiver.class);
-                    intent.putExtra(DevinoPushReceiver.KEY_DEEPLINK, button.deeplink);
-                    intent.putExtra(DevinoPushReceiver.KEY_PUSH_ID, pushId);
-                    PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), button.hashCode(), intent, PendingIntent.FLAG_IMMUTABLE);
-                    builder.addAction(R.drawable.ic_grey_circle, button.text, pendingIntent);
-                }
-            }
-        }*/
 
         if (buttons != null && buttons.size() > 0) {
             for (PushButton button : buttons) {

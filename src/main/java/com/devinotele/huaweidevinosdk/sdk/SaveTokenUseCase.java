@@ -1,16 +1,14 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
-
 import android.text.TextUtils;
 
 import com.huawei.agconnect.AGConnectOptions;
 import com.huawei.hms.aaid.HmsInstanceId;
 import com.huawei.hms.common.ApiException;
 
-
 class SaveTokenUseCase extends BaseUC {
 
-    private DevinoLogsCallback logsCallback;
+    private final DevinoLogsCallback logsCallback;
 
     SaveTokenUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
@@ -38,7 +36,6 @@ class SaveTokenUseCase extends BaseUC {
 
     void run (String token) {
         String persistedToken = sharedPrefsHelper.getString(SharedPrefsHelper.KEY_PUSH_TOKEN);
-
         if (!token.equals(persistedToken)) {
             sharedPrefsHelper.saveData(SharedPrefsHelper.KEY_PUSH_TOKEN, token);
             networkRepository.updateToken(token);
