@@ -1,6 +1,5 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
@@ -8,10 +7,9 @@ import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-
 class RequestGeoPermissionUseCase extends BaseUC {
 
-    private DevinoLogsCallback logsCallback;
+    private final DevinoLogsCallback logsCallback;
 
     RequestGeoPermissionUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
@@ -31,7 +29,5 @@ class RequestGeoPermissionUseCase extends BaseUC {
         } else {
             logsCallback.onMessageLogged("Permission has already been granted");
         }
-
     }
-
 }

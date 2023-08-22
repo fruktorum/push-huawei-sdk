@@ -8,8 +8,8 @@ import retrofit2.HttpException;
 
 class AppStartedUseCase extends BaseUC {
 
-    private DevinoLogsCallback logsCallback;
-    private String event = "app started";
+    private final DevinoLogsCallback logsCallback;
+    private final String event = "App started";
 
     AppStartedUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
@@ -26,7 +26,7 @@ class AppStartedUseCase extends BaseUC {
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            json -> logsCallback.onMessageLogged(event + json.toString()),
+                            json -> logsCallback.onMessageLogged(event + " -> " + json.toString()),
                             throwable -> {
                                 if (throwable instanceof HttpException)
                                     logsCallback.onMessageLogged(getErrorMessage(event, ((HttpException) throwable)));
@@ -36,7 +36,7 @@ class AppStartedUseCase extends BaseUC {
                     )
             );
         } else {
-            logsCallback.onMessageLogged("application has no push token yet");
+            logsCallback.onMessageLogged("Application has no push token yet");
         }
     }
 }

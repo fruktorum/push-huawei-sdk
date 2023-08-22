@@ -6,8 +6,8 @@ import retrofit2.HttpException;
 
 class SendLocationUseCase extends BaseUC {
 
-    private DevinoLogsCallback logsCallback;
-    private String event = "send geo: ";
+    private final DevinoLogsCallback logsCallback;
+    private final String event = "Send geo: ";
 
     SendLocationUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
@@ -24,12 +24,18 @@ class SendLocationUseCase extends BaseUC {
                         customData)
                 )
                 .subscribe(
-                        json -> logsCallback.onMessageLogged(event + json.toString()),
+                        json -> logsCallback.onMessageLogged(event + " -> " + json.toString()),
                         throwable -> {
                             if (throwable instanceof HttpException)
-                                logsCallback.onMessageLogged(getErrorMessage(event, ((HttpException) throwable)));
+                                logsCallback.onMessageLogged(
+                                        getErrorMessage(
+                                                event + " -> ",
+                                                ((HttpException) throwable))
+                                );
                             else
-                                logsCallback.onMessageLogged(event + throwable.getMessage());
+                                logsCallback.onMessageLogged(
+                                        event + " -> " + throwable.getMessage()
+                                );
                         }
                 )
         );

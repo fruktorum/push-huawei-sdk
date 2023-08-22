@@ -1,9 +1,9 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
 class DevinoErrorMessage {
-    private String event;
-    private String code;
-    private String message;
+    private final String event;
+    private final String code;
+    private final String message;
 
     DevinoErrorMessage(String event, String code, String message) {
         this.event = event;

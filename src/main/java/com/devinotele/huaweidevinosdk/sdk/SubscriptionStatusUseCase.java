@@ -7,8 +7,8 @@ import retrofit2.HttpException;
 
 class SubscriptionStatusUseCase extends BaseUC {
 
-    private DevinoLogsCallback logsCallback;
-    private String eventTemplate = "subscription status ";
+    private final DevinoLogsCallback logsCallback;
+    private final String eventTemplate = "Subscription status";
 
     SubscriptionStatusUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
@@ -20,17 +20,25 @@ class SubscriptionStatusUseCase extends BaseUC {
 
         if (token.length() > 0) {
             return networkRepository.getSubscriptionStatus()
-                    .doOnNext(json -> logsCallback.onMessageLogged(eventTemplate + " -> " + json.toString()))
+                    .doOnNext(
+                            json ->
+                                    logsCallback.onMessageLogged(
+                                            eventTemplate + " -> " + json.toString())
+                    )
                     .doOnError(throwable -> {
                         if (throwable instanceof HttpException)
-                            logsCallback.onMessageLogged(getErrorMessage(eventTemplate, ((HttpException) throwable)));
+                            logsCallback.onMessageLogged(
+                                    getErrorMessage(
+                                            eventTemplate,
+                                            ((HttpException) throwable))
+                            );
                         else
-                            logsCallback.onMessageLogged(eventTemplate + " -> " + throwable.getMessage());
-
+                            logsCallback.onMessageLogged(
+                                    eventTemplate + " -> " + throwable.getMessage()
+                            );
                     });
         }
-
-        String errorMessage = "can't get subscription status -> token not registered";
+        String errorMessage = "Can't get subscription status -> token not registered";
         logsCallback.onMessageLogged(errorMessage);
         return Observable.error(new IllegalArgumentException(errorMessage));
     }

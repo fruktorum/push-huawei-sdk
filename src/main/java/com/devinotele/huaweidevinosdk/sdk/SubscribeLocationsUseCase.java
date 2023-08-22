@@ -1,16 +1,11 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
-
 import android.content.Context;
-
 
 class SubscribeLocationsUseCase extends BaseUC {
 
-    private DevinoLogsCallback logsCallback;
-
-    SubscribeLocationsUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
+    SubscribeLocationsUseCase(HelpersPackage hp) {
         super(hp);
-        logsCallback = callback;
     }
 
     void run(Context context, int intervalMinutes) {
@@ -18,5 +13,4 @@ class SubscribeLocationsUseCase extends BaseUC {
         sharedPrefsHelper.saveData(SharedPrefsHelper.KEY_GPS_INTERVAL, intervalMinutes);
         DevinoLocationReceiver.setAlarm(context, 0);
     }
-
 }
