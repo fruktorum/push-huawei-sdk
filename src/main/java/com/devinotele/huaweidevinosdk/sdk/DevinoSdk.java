@@ -3,6 +3,12 @@ package com.devinotele.huaweidevinosdk.sdk;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.gson.JsonObject;
 import com.huawei.agconnect.AGConnectOptions;
@@ -10,8 +16,6 @@ import com.huawei.hms.aaid.HmsInstanceId;
 
 import java.util.HashMap;
 
-import androidx.annotation.ColorInt;
-import androidx.core.app.NotificationManagerCompat;
 import io.reactivex.Observable;
 
 /**
@@ -52,7 +56,14 @@ public class DevinoSdk {
         HmsInstanceId hmsInstanceId;
         AGConnectOptions connectOptions;
 
-        public Builder(Context ctx, String key, String applicationId, String appVersion, HmsInstanceId hmsInstanceId, AGConnectOptions connectOptions) {
+        public Builder(
+                Context ctx,
+                String key,
+                String applicationId,
+                String appVersion,
+                HmsInstanceId hmsInstanceId,
+                AGConnectOptions connectOptions
+        ) {
             this.ctx = ctx;
             this.key = key;
             this.applicationId = applicationId;
@@ -68,16 +79,19 @@ public class DevinoSdk {
             instance.appVersion = appVersion;
             instance.connectOptions = connectOptions;
             instance.hp = new HelpersPackage();
-            instance.hp.setSharedPrefsHelper(new SharedPrefsHelper(ctx.getSharedPreferences("", Context.MODE_PRIVATE)));
+            instance.hp.setSharedPrefsHelper(new SharedPrefsHelper(
+                    ctx.getSharedPreferences("", Context.MODE_PRIVATE)
+            ));
             instance.hp.setNotificationsHelper(new NotificationsHelper(ctx));
             instance.hp.setDevinoLocationHelper(new DevinoLocationHelper(ctx));
             instance.hmsInstanceId = hmsInstanceId;
             instance.isInitedProperly = true;
             instance.hp.getSharedPrefsHelper().saveData(SharedPrefsHelper.KEY_API_SECRET, key);
             instance.hp.setNetworkRepository(new DevinoNetworkRepositoryImpl(
-                            key,
-                            applicationId,
-                            instance.hp.getSharedPrefsHelper().getString(SharedPrefsHelper.KEY_PUSH_TOKEN),
+                            instance.applicationKey,
+                            instance.applicationId,
+                            instance.hp.getSharedPrefsHelper()
+                                    .getString(SharedPrefsHelper.KEY_PUSH_TOKEN),
                             instance.logsCallback
                     )
             );
@@ -86,7 +100,7 @@ public class DevinoSdk {
 
         /**
          * Set a callback to get library messages
-         * callback may also be set up annytime via requestLogs() function
+         * callback may also be set up anytime via requestLogs() function
          * Use unsubscribeLogs() function to unsubscribe.
          */
         public Builder setLogsCallback(DevinoLogsCallback callback) {
@@ -99,7 +113,7 @@ public class DevinoSdk {
     /**
      * Register callback to get library messages
      *
-     * @param callback messages are dispathced to this callback
+     * @param callback messages are dispatched to this callback
      */
     public void requestLogs(DevinoLogsCallback callback) {
         getInstance().logsCallback = callback;
@@ -107,7 +121,7 @@ public class DevinoSdk {
     }
 
     /**
-     * Stop getting messages to previosely registered callback
+     * Stop getting messages to previously registered callback
      */
     public void unsubscribeLogs() {
         logsCallback.onMessageLogged("Logs are disabled.");
@@ -121,7 +135,7 @@ public class DevinoSdk {
      * @param email user email
      */
     public void register(Context context, String phone, String email) {
-        handleToken(connectOptions, hmsInstanceId, logsCallback, phone, email);
+        handleToken(instance.connectOptions, instance.hmsInstanceId, logsCallback, phone, email);
     }
 
     /**
@@ -133,7 +147,7 @@ public class DevinoSdk {
     }
 
     /**
-     * Send any custon event
+     * Send any custom event
      *
      * @param eventName Event name
      * @param eventData Key-Value typed data
@@ -206,7 +220,7 @@ public class DevinoSdk {
     }
 
     /**
-     * Sends user location repeatedely in given interval (minutes)
+     * Sends user location repeatedly in given interval (minutes)
      * Updates stop on phone reboot (you need to call this function once again after reboot)
      * <p>
      * It is not guaranteed that location is sent in every case. Some Android OS versions may restrict that
@@ -253,7 +267,7 @@ public class DevinoSdk {
     /**
      * Cancel all unfinished requests
      * Some network requests are retried few times when failed.
-     * It is highly recomended that you call this function when activity (fragment) is destroyed (paused)
+     * It is highly recommended that you call this function when activity (fragment) is destroyed (paused)
      */
     public void stop() {
         BaseUC.unsubscribeAll();
@@ -282,6 +296,56 @@ public class DevinoSdk {
         DevinoSdkPushService.defaultNotificationIconColor = color;
     }
 
+    /**
+     * Shows UI dialog requesting user notification permission
+     *
+     * @param activity    Calling activity
+     * @param requestCode specify code to handle result in onRequestPermissionsResult() method of your Activity
+     */
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    public void requestNotificationPermission(Activity activity, Integer requestCode) {
+        RequestNotificationPermissionUseCase useCase =
+                new RequestNotificationPermissionUseCase(instance.hp, logsCallback);
+        useCase.run(activity, requestCode);
+    }
+
+    /**
+     * Shows UI dialog requesting user geo and notification permissions
+     *
+     * @param activity    Calling activity
+     * @param requestCode specify code to handle result in onRequestPermissionsResult() method of your Activity
+     */
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    public void requestGeoAndNotificationPermissions(Activity activity, int requestCode) {
+        RequestGeoAndNotificationPermissionUseCase useCase =
+                new RequestGeoAndNotificationPermissionUseCase(instance.hp, logsCallback);
+        useCase.run(activity, requestCode);
+    }
+
+    /**
+     * Update base api url
+     *
+     * @param newBaseApiUrl New base api url
+     */
+    public void updateBaseApiUrl(@NonNull String newBaseApiUrl, Context ctx) {
+        UpdateApiBaseUrlUseCase useCase = new UpdateApiBaseUrlUseCase(instance.hp, logsCallback);
+        useCase.run(newBaseApiUrl, ctx);
+
+    }
+
+    public AGConnectOptions getAGConnectOptionsInstance() {
+        return instance.connectOptions;
+    }
+
+    public void updateToken(String pushToken) {
+        SaveTokenUseCase useCase = new SaveTokenUseCase(instance.hp, logsCallback);
+        useCase.run(pushToken);
+    }
+
+    protected String getSavedBaseUrl() {
+        return instance.hp.getSharedPrefsHelper().getString(SharedPrefsHelper.KEY_API_BASE_URL);
+    }
+
     void hideNotification(Context context) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.cancelAll();
@@ -308,6 +372,11 @@ public class DevinoSdk {
 
     private DevinoLogsCallback getEmptyCallback() {
         return message -> System.out.println("Devino SDK event (logs are disabled).");
+    }
+
+    protected void saveCustomDataFromPushJson(@NonNull String customData) {
+        SaveCustomDataHashMapUseCase useCase = new SaveCustomDataHashMapUseCase(instance.hp, logsCallback);
+        useCase.run(customData);
     }
 
     static class PushStatus {

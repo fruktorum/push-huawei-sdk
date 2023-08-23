@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.devinotele.huaweidevinosdk.sdk">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
-        android:usesCleartextTraffic="true"
-        tools:targetApi="m">
+        android:usesCleartextTraffic="true">
+
+        <activity
+            android:name="com.devinotele.huaweidevinosdk.sdk.NotificationTrampolineActivity"
+            android:theme="@style/Theme.Transparent"
+            android:noHistory="true">
+        </activity>
 
         <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoPushReceiver" />
+
         <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoCancelReceiver" />
 
         <receiver
@@ -38,4 +44,5 @@
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
+
 </manifest>

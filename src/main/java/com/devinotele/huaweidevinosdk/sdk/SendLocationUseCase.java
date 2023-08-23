@@ -1,8 +1,8 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
+import java.util.HashMap;
 
 import retrofit2.HttpException;
-
 
 class SendLocationUseCase extends BaseUC {
 
@@ -15,8 +15,14 @@ class SendLocationUseCase extends BaseUC {
     }
 
     void run() {
+        HashMap<String, Object> customData =
+                sharedPrefsHelper.getHashMap(SharedPrefsHelper.KEY_CUSTOM_DATA);
         trackSubscription(devinoLocationHelper.getNewLocation()
-                .flatMap(location -> networkRepository.geo(location.getLatitude(), location.getLongitude()))
+                .flatMap(location -> networkRepository.geo(
+                        location.getLatitude(),
+                        location.getLongitude(),
+                        customData)
+                )
                 .subscribe(
                         json -> logsCallback.onMessageLogged(event + json.toString()),
                         throwable -> {
@@ -28,5 +34,4 @@ class SendLocationUseCase extends BaseUC {
                 )
         );
     }
-
 }
