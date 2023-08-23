@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -28,6 +29,7 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.huawei.hms.push.HmsMessageService;
 import com.huawei.hms.push.RemoteMessage;
+import com.squareup.picasso.Picasso;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -82,7 +84,6 @@ public class DevinoSdkPushService extends HmsMessageService {
                 Log.d("DevinoPush", "CustomDataString =  " + customDataString);
             }
 
-            //Uri sound = DevinoSdk.getInstance().getSound();
             String sound = data.get("sound");
             Uri soundUri;
             if (sound != null) {
@@ -110,7 +111,6 @@ public class DevinoSdkPushService extends HmsMessageService {
 
             DevinoSdk.getInstance().pushEvent(pushId, DevinoSdk.PushStatus.DELIVERED, null);
         }
-
     }
 
     public void onNewToken(@NonNull String token) {
@@ -132,7 +132,6 @@ public class DevinoSdkPushService extends HmsMessageService {
             String action,
             Integer badgeNumber
     ) {
-
         Intent broadcastIntent = new Intent(getApplicationContext(), DevinoPushReceiver.class);
         broadcastIntent.putExtra(DevinoPushReceiver.KEY_PUSH_ID, pushId);
         if (action != null) {
@@ -219,13 +218,26 @@ public class DevinoSdkPushService extends HmsMessageService {
                     .bigText(text));
         }
 
-        if (largeIcon != null) {
-            Bitmap bitmap = ImageDownloader.getBitmapFromURL(largeIcon);
-            if (bigPicture) {
-                builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(bitmap));
+        try {
+            if (largeIcon != null) {
+                Picasso.get().load(largeIcon).into(new ImageBitmapTarget() {
+                    @Override
+                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                        if (bigPicture) {
+                            builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(bitmap));
+                        }
+                        builder.setLargeIcon(bitmap);
+                    }
+
+                    @Override
+                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                        Log.d("DevinoPush", "onBitmapFailed(): " + e.getLocalizedMessage());
+                    }
+                });
             }
-            builder.setLargeIcon(bitmap);
-        }
+        } catch (Exception ex) {
+            Log.d("DevinoPush", "largeIcon: " + ex.getLocalizedMessage());
+    }
 
         if (soundUri != null) {
             playRingtone(soundUri);
@@ -276,7 +288,6 @@ public class DevinoSdkPushService extends HmsMessageService {
             return;
         }
         notificationManager.notify(113, builder.build());
-
     }
 
     private void playRingtone(Uri customSound) {
