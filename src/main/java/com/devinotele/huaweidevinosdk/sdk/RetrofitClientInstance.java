@@ -10,7 +10,7 @@ class RetrofitClientInstance {
 
     private static Retrofit retrofit;
     private static volatile String BASE_URL = "https://integrationapi.net/push/sdk/";
-    private static OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+    private static final OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 
     public void setApiBaseUrl(String newApiBaseUrl) {
         BASE_URL = newApiBaseUrl;

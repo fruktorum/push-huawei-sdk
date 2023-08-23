@@ -8,8 +8,8 @@ import retrofit2.HttpException;
 
 class PushEventUseCase extends BaseUC {
 
-    private DevinoLogsCallback logsCallback;
-    private String eventTemplate = "push event (%s, %s, %s) ";
+    private final DevinoLogsCallback logsCallback;
+    private final String eventTemplate = "push event (%s, %s, %s) ";
 
     PushEventUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
@@ -26,20 +26,41 @@ class PushEventUseCase extends BaseUC {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             json -> {
-                                logsCallback.onMessageLogged(String.format(eventTemplate, pushId, actionType, actionId) + json.toString());
+                                logsCallback.onMessageLogged(
+                                        String.format(
+                                                eventTemplate,
+                                                pushId,
+                                                actionType,
+                                                actionId
+                                        ) + " -> " + json.toString()
+                                );
                             },
                             throwable -> {
                                 if (throwable instanceof HttpException)
-                                    logsCallback.onMessageLogged(getErrorMessage(String.format(eventTemplate, pushId, actionType, actionId), ((HttpException) throwable)));
+                                    logsCallback.onMessageLogged(
+                                            getErrorMessage(
+                                                    String.format(
+                                                            eventTemplate,
+                                                            pushId,
+                                                            actionType,
+                                                            actionId
+                                                    ) + " -> ",
+                                                    ((HttpException) throwable))
+                                    );
                                 else
-                                    logsCallback.onMessageLogged(String.format(eventTemplate, pushId, actionType, actionId) + throwable.getMessage());
+                                    logsCallback.onMessageLogged(
+                                            String.format(
+                                                    eventTemplate,
+                                                    pushId,
+                                                    actionType,
+                                                    actionId
+                                            ) + " -> " + throwable.getMessage()
+                                    );
                             }
                     )
             );
-        }
-
-        else {
-            logsCallback.onMessageLogged("can't send push event -> token not registered");
+        } else {
+            logsCallback.onMessageLogged("Can't send push event -> token not registered");
         }
     }
 }

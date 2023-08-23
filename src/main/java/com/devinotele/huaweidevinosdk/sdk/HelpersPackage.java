@@ -38,5 +38,4 @@ class HelpersPackage {
     DevinoLocationHelper getDevinoLocationHelper() {
         return devinoLocationHelper;
     }
-
 }

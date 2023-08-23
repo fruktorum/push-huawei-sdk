@@ -1,17 +1,15 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
-
 import java.util.HashMap;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.HttpException;
 
-
 class SendGeoUseCase extends BaseUC {
 
-    private DevinoLogsCallback logsCallback;
-    private String eventTemplate = "geo(%s, %s) ";
+    private final DevinoLogsCallback logsCallback;
+    private final String eventTemplate = "Geo (%s, %s) ";
 
     SendGeoUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
@@ -27,18 +25,38 @@ class SendGeoUseCase extends BaseUC {
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            json -> logsCallback.onMessageLogged(String.format(eventTemplate, latitude, longitude) + json.toString()),
+                            json -> logsCallback.onMessageLogged(
+                                    String.format(
+                                            eventTemplate,
+                                            latitude,
+                                            longitude
+                                    ) + " -> " + json.toString()
+                            ),
                             throwable -> {
                                 if (throwable instanceof HttpException)
-                                    logsCallback.onMessageLogged(getErrorMessage(String.format(eventTemplate, latitude, longitude), ((HttpException) throwable)));
+                                    logsCallback.onMessageLogged(
+                                            getErrorMessage(
+                                                    String.format(
+                                                            eventTemplate,
+                                                            latitude,
+                                                            longitude
+                                                    ) + " -> ",
+                                                    ((HttpException) throwable))
+                                    );
                                 else
-                                    logsCallback.onMessageLogged(String.format(eventTemplate, latitude, longitude) + throwable.getMessage());
+                                    logsCallback.onMessageLogged(
+                                            String.format(
+                                                    eventTemplate,
+                                                    latitude,
+                                                    longitude
+                                            ) + " -> " + throwable.getMessage()
+                                    );
                             }
                     )
             );
         }
         else {
-            logsCallback.onMessageLogged("can't send geo -> token not registered");
+            logsCallback.onMessageLogged("Can't send geo -> token not registered");
         }
     }
 }

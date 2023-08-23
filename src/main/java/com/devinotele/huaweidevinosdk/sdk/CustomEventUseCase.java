@@ -10,8 +10,8 @@ import retrofit2.HttpException;
 
 class CustomEventUseCase extends BaseUC {
 
-    private DevinoLogsCallback logsCallback;
-    private String eventTemplate = "custom event (%s) ";
+    private final DevinoLogsCallback logsCallback;
+    private final String eventTemplate = "Custom event (%s) ";
 
     CustomEventUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
@@ -28,19 +28,35 @@ class CustomEventUseCase extends BaseUC {
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            json -> logsCallback.onMessageLogged(String.format(eventTemplate, eventName) + json.toString()),
+                            json -> logsCallback.onMessageLogged(
+                                    String.format(
+                                            eventTemplate,
+                                            eventName
+                                    ) + " -> " + json.toString()
+                            ),
                             throwable -> {
                                 if (throwable instanceof HttpException)
-                                    logsCallback.onMessageLogged(getErrorMessage(String.format(eventTemplate, eventName), ((HttpException) throwable)));
+                                    logsCallback.onMessageLogged(
+                                            getErrorMessage(
+                                                    String.format(
+                                                            eventTemplate,
+                                                            eventName
+                                                    ),
+                                                    ((HttpException) throwable))
+                                    );
                                 else
-                                    logsCallback.onMessageLogged(String.format(eventTemplate, eventName) + throwable.getMessage());
-
+                                    logsCallback.onMessageLogged(
+                                            String.format(
+                                                    eventTemplate,
+                                                    eventName
+                                            ) + " -> " + throwable.getMessage()
+                                    );
                             }
                     )
             );
         }
         else {
-            logsCallback.onMessageLogged("can't send custom event -> token not registered");
+            logsCallback.onMessageLogged("Can't send custom event -> token not registered");
         }
     }
 }

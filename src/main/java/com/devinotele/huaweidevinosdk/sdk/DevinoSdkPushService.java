@@ -16,6 +16,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
@@ -25,13 +32,6 @@ import com.huawei.hms.push.RemoteMessage;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 public class DevinoSdkPushService extends HmsMessageService {
 
@@ -324,7 +324,7 @@ public class DevinoSdkPushService extends HmsMessageService {
         }
     }
 
-    protected class PushButton {
+    protected static class PushButton {
 
         @SerializedName("text")
         private String text;

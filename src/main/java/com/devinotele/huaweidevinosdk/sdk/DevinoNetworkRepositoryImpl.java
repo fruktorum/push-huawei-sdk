@@ -38,15 +38,19 @@ class DevinoNetworkRepositoryImpl implements DevinoNetworkRepository {
         retryMap.put(source.hashCode(), 0);
         return source.retryWhen(errors ->
                 errors.flatMap(error -> {
-                    boolean retryCondition = (error instanceof HttpException && codeToRepeat(((HttpException) error).code()))
-                            || error instanceof SocketTimeoutException
+                    boolean retryCondition =
+                            (error instanceof HttpException
+                                    && codeToRepeat(((HttpException) error).code())
+                            ) || error instanceof SocketTimeoutException
                             || error instanceof ConnectException
                             || error instanceof UnknownHostException;
 
                     int retryCount = retryMap.get(source.hashCode(), intervals.length);
 
                     if (retryCount < intervals.length && retryCondition) {
-                        callback.onMessageLogged("Retrying to connect: try $retryCount Cause: ${error.message!!}");
+                        callback.onMessageLogged(
+                                "Retrying to connect: try $retryCount Cause: ${error.message!!}"
+                        );
                         retryMap.put(source.hashCode(), retryCount + 1);
                         return Observable.timer(
                                 intervals[retryCount],

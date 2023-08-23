@@ -28,9 +28,7 @@ import io.reactivex.Observable;
 public class DevinoSdk {
 
     private static DevinoSdk instance;
-    private String applicationKey;
-    private String applicationId;
-    private String appVersion;
+    private String applicationKey, applicationId, appVersion;
     private Boolean isInitedProperly;
     private HelpersPackage hp;
     private HmsInstanceId hmsInstanceId;
@@ -233,7 +231,7 @@ public class DevinoSdk {
      */
     public void subscribeGeo(Context context, int intervalMinutes) {
         unsubscribeGeo(context);
-        SubscribeLocationsUseCase useCase = new SubscribeLocationsUseCase(instance.hp, logsCallback);
+        SubscribeLocationsUseCase useCase = new SubscribeLocationsUseCase(instance.hp);
         useCase.run(context, intervalMinutes);
     }
 
@@ -243,7 +241,7 @@ public class DevinoSdk {
      * @param context -
      */
     public void unsubscribeGeo(Context context) {
-        UnsubscribeLocationsUseCase useCase = new UnsubscribeLocationsUseCase(instance.hp, logsCallback);
+        UnsubscribeLocationsUseCase useCase = new UnsubscribeLocationsUseCase(instance.hp);
         useCase.run(context);
     }
 

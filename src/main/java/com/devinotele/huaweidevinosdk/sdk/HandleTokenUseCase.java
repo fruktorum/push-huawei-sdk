@@ -18,7 +18,7 @@ class HandleTokenUseCase extends BaseUC {
     private final DevinoLogsCallback logsCallback;
     private final String phone;
     private final String email;
-    private final String event = "register token (put) ";
+    private final String event = "Register token (put) ";
 
     HandleTokenUseCase(HelpersPackage hp, DevinoLogsCallback callback, String phone, String email) {
         super(hp);
@@ -57,20 +57,28 @@ class HandleTokenUseCase extends BaseUC {
     }
 
     private void registerUser(String email, String phone, HashMap<String, Object> customData) {
-
         trackSubscription(networkRepository.registerUser(email, phone, customData)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         json -> {
-                            sharedPrefsHelper.saveData(SharedPrefsHelper.KEY_TOKEN_REGISTERED, true);
-                            logsCallback.onMessageLogged(event + json.toString());
+                            sharedPrefsHelper.saveData(
+                                    SharedPrefsHelper.KEY_TOKEN_REGISTERED,
+                                    true
+                            );
+                            logsCallback.onMessageLogged(event + " -> " + json.toString());
                         },
                         throwable -> {
                             if (throwable instanceof HttpException)
-                                logsCallback.onMessageLogged(getErrorMessage(event, ((HttpException) throwable)));
+                                logsCallback.onMessageLogged(
+                                        getErrorMessage(
+                                                event + " -> ",
+                                                ((HttpException) throwable))
+                                );
                             else
-                                logsCallback.onMessageLogged(event + throwable.getMessage());
+                                logsCallback.onMessageLogged(
+                                        event + " -> " + throwable.getMessage()
+                                );
                         }
                 )
         );

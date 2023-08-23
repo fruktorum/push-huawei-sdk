@@ -12,7 +12,7 @@ import android.os.Build;
  */
 public class DevinoLocationReceiver extends BroadcastReceiver {
 
-    static final String CUSTOM_INTENT = "com.devinotele.devinosdk.ALARM";
+    static final String CUSTOM_INTENT = "com.devinotele.huaweidevinosdk.ALARM";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -43,6 +43,12 @@ public class DevinoLocationReceiver extends BroadcastReceiver {
     static PendingIntent getPendingIntent(Context context) {
         Intent alarmIntent = new Intent(context, DevinoLocationReceiver.class);
         alarmIntent.setAction(CUSTOM_INTENT);
-        return PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_IMMUTABLE);
+        return
+                PendingIntent.getBroadcast(
+                        context,
+                        0,
+                        alarmIntent,
+                        PendingIntent.FLAG_IMMUTABLE
+                );
     }
 }
