@@ -43,7 +43,7 @@ class HandleTokenUseCase extends BaseUC {
                         String token = hmsInstanceId.getToken(agAppId, tokenScope);
 
                         if (!TextUtils.isEmpty(token)) {
-                            Log.d("TOKEN", token);
+                            Log.d("DevinoPush", "HandleTokenUseCase: " + token);
                             sharedPrefsHelper.saveData(SharedPrefsHelper.KEY_PUSH_TOKEN, token);
                             DevinoSdk.getInstance().appStarted();
                             registerUser(email, phone, customData);

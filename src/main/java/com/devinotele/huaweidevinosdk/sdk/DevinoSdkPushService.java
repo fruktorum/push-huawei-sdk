@@ -224,7 +224,9 @@ public class DevinoSdkPushService extends HmsMessageService {
                     @Override
                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                         if (bigPicture) {
-                            builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(bitmap));
+                            builder.setStyle(new NotificationCompat.BigPictureStyle()
+                                    .bigPicture(bitmap)
+                                    .bigLargeIcon((Bitmap) null));
                         }
                         builder.setLargeIcon(bitmap);
                     }
