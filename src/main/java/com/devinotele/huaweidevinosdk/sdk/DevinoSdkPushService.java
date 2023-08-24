@@ -218,33 +218,6 @@ public class DevinoSdkPushService extends HmsMessageService {
                     .bigText(text));
         }
 
-        try {
-            if (largeIcon != null) {
-                Picasso.get().load(largeIcon).into(new ImageBitmapTarget() {
-                    @Override
-                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                        if (bigPicture) {
-                            builder.setStyle(new NotificationCompat.BigPictureStyle()
-                                    .bigPicture(bitmap)
-                                    .bigLargeIcon((Bitmap) null));
-                        }
-                        builder.setLargeIcon(bitmap);
-                    }
-
-                    @Override
-                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-                        Log.d("DevinoPush", "onBitmapFailed(): " + e.getLocalizedMessage());
-                    }
-                });
-            }
-        } catch (Exception ex) {
-            Log.d("DevinoPush", "largeIcon: " + ex.getLocalizedMessage());
-    }
-
-        if (soundUri != null) {
-            playRingtone(soundUri);
-        }
-
         if (buttons != null && buttons.size() > 0) {
             for (PushButton button : buttons) {
                 if (button.text != null) {
@@ -281,6 +254,27 @@ public class DevinoSdkPushService extends HmsMessageService {
             }
         }
 
+        if (largeIcon != null) {
+            Picasso.get().load(largeIcon).into(new ImageBitmapTarget() {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    if (bigPicture)
+                        builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(bitmap));
+                    builder.setLargeIcon(bitmap);
+                    showNotification(builder, soundUri);
+                }
+
+                @Override
+                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                    showNotification(builder, soundUri);
+                }
+            });
+        } else {
+            showNotification(builder, soundUri);
+        }
+    }
+
+    private void showNotification(NotificationCompat.Builder builder, Uri soundUri) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED
@@ -289,7 +283,9 @@ public class DevinoSdkPushService extends HmsMessageService {
             // through the DevinoSdk.getInstance().requestNotificationPermission() method.
             return;
         }
+        playRingtone(soundUri);
         notificationManager.notify(113, builder.build());
+        Log.d("DevinoPush", "notify");
     }
 
     private void playRingtone(Uri customSound) {
