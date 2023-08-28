@@ -319,7 +319,7 @@ public class DevinoSdk {
     }
 
     /**
-     * Shows UI dialog requesting user geo and notification permissions
+     * Shows UI dialog requesting user geo and notification permissions - ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION, POST_NOTIFICATIONS
      *
      * @param activity    Calling activity
      * @param requestCode specify code to handle result in onRequestPermissionsResult() method of your Activity
