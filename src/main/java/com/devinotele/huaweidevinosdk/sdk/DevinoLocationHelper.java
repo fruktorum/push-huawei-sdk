@@ -8,9 +8,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
+import com.huawei.hmf.tasks.Task;
 import com.huawei.hms.location.FusedLocationProviderClient;
 import com.huawei.hms.location.LocationServices;
 
@@ -35,20 +37,31 @@ class DevinoLocationHelper {
 
     @SuppressLint("MissingPermission")
     Single<Location> getNewLocation() {
+        fusedLocationClient.getLocationAvailability().addOnSuccessListener(loc -> {
+            Log.d("DevinoPush", "DevinoLocationHelper isLocationAvailable=" + loc.isLocationAvailable());
+        });
+
         return Single.create(e -> {
             if (ActivityCompat.checkSelfPermission(
                     context,
                     Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
             ) {
-                fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                Task<Location> loc = fusedLocationClient.getLastLocation();
+                loc.addOnSuccessListener(location -> {
                             if (location != null) {
+                                Log.d("DevinoPush", "getNewLocation location=" + location);
                                 e.onSuccess(location);
                             } else {
                                 e.onError(new Throwable("Your location settings is turned off"));
+                                Log.d("DevinoPush", "Your location settings is turned off");
                             }
                         }
                 );
+                loc.addOnFailureListener(exception -> {
+                    Log.d("DevinoPush", "getLastLocation() exception: " + exception.getLocalizedMessage());
+                    e.onError(new Throwable("getLastLocation() exception: " + exception.getLocalizedMessage()));
+                });
             } else {
                 e.onError(new Throwable("You haven't given the permissions"));
             }

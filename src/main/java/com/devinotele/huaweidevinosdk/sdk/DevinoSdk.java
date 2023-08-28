@@ -207,13 +207,24 @@ public class DevinoSdk {
     }
 
     /**
-     * Shows UI dialog requesting user geo permission
+     * Shows UI dialog requesting user foreground geo permission - ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION
      *
      * @param activity    Calling activity
-     * @param requestCode specify code to handle result in onRequestPermissionsResult() method of your Activity
+     * @param requestCode Specify code to handle result in onRequestPermissionsResult() method of your Activity
      */
-    public void requestGeoPermission(Activity activity, int requestCode) {
-        RequestGeoPermissionUseCase useCase = new RequestGeoPermissionUseCase(instance.hp, logsCallback);
+    public void requestForegroundGeoPermission(Activity activity, int requestCode) {
+        RequestForegroundGeoPermissionUseCase useCase = new RequestForegroundGeoPermissionUseCase(instance.hp, logsCallback);
+        useCase.run(activity, requestCode);
+    }
+
+    /**
+     * Shows UI dialog requesting user background geo permission - ACCESS_BACKGROUND_LOCATION
+     *
+     * @param activity    Calling activity
+     * @param requestCode Specify code to handle result in onRequestPermissionsResult() method of your Activity
+     */
+    public void requestBackgroundGeoPermission(Activity activity, int requestCode) {
+        RequestBackgroundGeoPermissionUseCase useCase = new RequestBackgroundGeoPermissionUseCase(instance.hp, logsCallback);
         useCase.run(activity, requestCode);
     }
 
@@ -315,8 +326,8 @@ public class DevinoSdk {
      */
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     public void requestGeoAndNotificationPermissions(Activity activity, int requestCode) {
-        RequestGeoAndNotificationPermissionUseCase useCase =
-                new RequestGeoAndNotificationPermissionUseCase(instance.hp, logsCallback);
+        RequestForegroundGeoAndNotificationPermissionUseCase useCase =
+                new RequestForegroundGeoAndNotificationPermissionUseCase(instance.hp, logsCallback);
         useCase.run(activity, requestCode);
     }
 

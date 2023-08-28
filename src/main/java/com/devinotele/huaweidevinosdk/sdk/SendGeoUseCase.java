@@ -1,5 +1,7 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
+import android.util.Log;
+
 import java.util.HashMap;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -17,6 +19,8 @@ class SendGeoUseCase extends BaseUC {
     }
 
     void run(Double latitude, Double longitude) {
+        Log.d("DevinoPush", "SendGeoUseCase latitude="+latitude);
+        Log.d("DevinoPush", "SendGeoUseCase longitude="+longitude);
         String token = sharedPrefsHelper.getString(SharedPrefsHelper.KEY_PUSH_TOKEN);
         HashMap<String, Object> customData =
                 sharedPrefsHelper.getHashMap(SharedPrefsHelper.KEY_CUSTOM_DATA);
@@ -25,13 +29,16 @@ class SendGeoUseCase extends BaseUC {
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            json -> logsCallback.onMessageLogged(
-                                    String.format(
-                                            eventTemplate,
-                                            latitude,
-                                            longitude
-                                    ) + " -> " + json.toString()
-                            ),
+                            json -> {
+                                logsCallback.onMessageLogged(
+                                        String.format(
+                                                eventTemplate,
+                                                latitude,
+                                                longitude
+                                        ) + " -> " + json.toString()
+                                );
+                                Log.d("DevinoPush", "SendGeoUseCase json="+json);
+                            },
                             throwable -> {
                                 if (throwable instanceof HttpException)
                                     logsCallback.onMessageLogged(

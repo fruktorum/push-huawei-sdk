@@ -17,27 +17,30 @@ class SendLocationUseCase extends BaseUC {
     void run() {
         HashMap<String, Object> customData =
                 sharedPrefsHelper.getHashMap(SharedPrefsHelper.KEY_CUSTOM_DATA);
-        trackSubscription(devinoLocationHelper.getNewLocation()
-                .flatMap(location -> networkRepository.geo(
-                        location.getLatitude(),
-                        location.getLongitude(),
-                        customData)
-                )
-                .subscribe(
-                        json -> logsCallback.onMessageLogged(event + " -> " + json.toString()),
-                        throwable -> {
-                            if (throwable instanceof HttpException)
-                                logsCallback.onMessageLogged(
-                                        getErrorMessage(
-                                                event + " -> ",
-                                                ((HttpException) throwable))
-                                );
-                            else
-                                logsCallback.onMessageLogged(
-                                        event + " -> " + throwable.getMessage()
-                                );
-                        }
-                )
+        trackSubscription(
+                devinoLocationHelper.getNewLocation()
+                        .flatMap(location -> networkRepository.geo(
+                                location.getLatitude(),
+                                location.getLongitude(),
+                                customData)
+                        )
+                        .subscribe(
+                                json -> {
+                                    logsCallback.onMessageLogged(event + " -> " + json.toString());
+                                },
+                                throwable -> {
+                                    if (throwable instanceof HttpException)
+                                        logsCallback.onMessageLogged(
+                                                getErrorMessage(
+                                                        event + " -> ",
+                                                        ((HttpException) throwable))
+                                        );
+                                    else
+                                        logsCallback.onMessageLogged(
+                                                event + " -> " + throwable.getMessage()
+                                        );
+                                }
+                        )
         );
     }
 }
