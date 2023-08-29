@@ -6,6 +6,7 @@ class HelpersPackage {
     private DevinoNetworkRepository networkRepository;
     private NotificationsHelper notificationsHelper;
     private DevinoLocationHelper devinoLocationHelper;
+    private SaveTokenUseCase saveTokenUseCase;
 
     SharedPrefsHelper getSharedPrefsHelper() {
         return sharedPrefsHelper;
@@ -27,6 +28,10 @@ class HelpersPackage {
         this.devinoLocationHelper = devinoLocationHelper;
     }
 
+    void setSaveTokenUseCaseHelper(SaveTokenUseCase saveTokenUseCase) {
+        this.saveTokenUseCase = saveTokenUseCase;
+    }
+
     DevinoNetworkRepository getNetworkRepository() {
         return networkRepository;
     }
@@ -37,5 +42,9 @@ class HelpersPackage {
 
     DevinoLocationHelper getDevinoLocationHelper() {
         return devinoLocationHelper;
+    }
+
+    SaveTokenUseCase getSaveTokenUseCaseHelper() {
+        return saveTokenUseCase;
     }
 }

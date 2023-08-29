@@ -57,6 +57,8 @@ class CustomEventUseCase extends BaseUC {
         }
         else {
             logsCallback.onMessageLogged("Can't send custom event -> token not registered");
+            logsCallback.onMessageLogged("The token was requested again.");
+            DevinoSdk.getInstance().saveToken();
         }
     }
 }

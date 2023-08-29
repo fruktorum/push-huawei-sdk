@@ -31,11 +31,11 @@ public class DevinoSdk {
     private String applicationKey, applicationId, appVersion;
     private Boolean isInitedProperly;
     private HelpersPackage hp;
-    private HmsInstanceId hmsInstanceId;
+    HmsInstanceId hmsInstanceId;
     private AGConnectOptions connectOptions;
     private Integer geoFrequency;
     private Integer geoMode;
-    private DevinoLogsCallback logsCallback = getEmptyCallback();
+    DevinoLogsCallback logsCallback = getEmptyCallback();
     private Uri customSound;
 
     public static synchronized DevinoSdk getInstance() throws IllegalStateException {
@@ -76,14 +76,14 @@ public class DevinoSdk {
             instance.applicationId = applicationId;
             instance.appVersion = appVersion;
             instance.connectOptions = connectOptions;
+            instance.hmsInstanceId = hmsInstanceId;
+            instance.isInitedProperly = true;
             instance.hp = new HelpersPackage();
             instance.hp.setSharedPrefsHelper(new SharedPrefsHelper(
                     ctx.getSharedPreferences("", Context.MODE_PRIVATE)
             ));
             instance.hp.setNotificationsHelper(new NotificationsHelper(ctx));
             instance.hp.setDevinoLocationHelper(new DevinoLocationHelper(ctx));
-            instance.hmsInstanceId = hmsInstanceId;
-            instance.isInitedProperly = true;
             instance.hp.getSharedPrefsHelper().saveData(SharedPrefsHelper.KEY_API_SECRET, key);
             instance.hp.setNetworkRepository(new DevinoNetworkRepositoryImpl(
                             instance.applicationKey,
@@ -93,7 +93,15 @@ public class DevinoSdk {
                             instance.logsCallback
                     )
             );
-            instance.saveToken(ctx, instance.hmsInstanceId, instance.logsCallback);
+            instance.hp.setSaveTokenUseCaseHelper(
+                    new SaveTokenUseCase(
+                            instance.hp,
+                            instance.logsCallback,
+                            instance.connectOptions,
+                            instance.hmsInstanceId
+                    )
+            );
+            instance.saveToken();
         }
 
         /**
@@ -347,7 +355,7 @@ public class DevinoSdk {
     }
 
     public void updateToken(String pushToken) {
-        SaveTokenUseCase useCase = new SaveTokenUseCase(instance.hp, logsCallback);
+        SaveTokenUseCase useCase = instance.hp.getSaveTokenUseCaseHelper();//new SaveTokenUseCase(instance.hp, logsCallback);
         useCase.run(pushToken);
     }
 
@@ -374,9 +382,9 @@ public class DevinoSdk {
         return instance.hp.getSharedPrefsHelper().getBoolean(SharedPrefsHelper.KEY_TOKEN_REGISTERED);
     }
 
-    private void saveToken(Context context, HmsInstanceId hmsInstanceId, DevinoLogsCallback callback) {
-        SaveTokenUseCase useCase = new SaveTokenUseCase(instance.hp, callback);
-        useCase.run(connectOptions, hmsInstanceId);
+    void saveToken() {
+        SaveTokenUseCase useCase = instance.hp.getSaveTokenUseCaseHelper(); // new SaveTokenUseCase(instance.hp, callback);
+        useCase.run();
     }
 
     private DevinoLogsCallback getEmptyCallback() {

@@ -30,9 +30,9 @@ public class RequestForegroundGeoAndNotificationPermissionUseCase extends BaseUC
 
             ActivityCompat.requestPermissions(activity,
                     new String[]{
-                            Manifest.permission.POST_NOTIFICATIONS,
                             Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.POST_NOTIFICATIONS
                     },
                     requestCode);
         } else {

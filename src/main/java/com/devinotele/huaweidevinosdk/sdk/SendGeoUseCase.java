@@ -64,6 +64,8 @@ class SendGeoUseCase extends BaseUC {
         }
         else {
             logsCallback.onMessageLogged("Can't send geo -> token not registered");
+            logsCallback.onMessageLogged("The token was requested again.");
+            DevinoSdk.getInstance().saveToken();
         }
     }
 }
