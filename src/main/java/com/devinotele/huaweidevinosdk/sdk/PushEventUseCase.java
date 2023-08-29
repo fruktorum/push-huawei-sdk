@@ -63,8 +63,9 @@ class PushEventUseCase extends BaseUC {
                     )
             );
         } else {
-            Log.d("DevinoPush", "PushEventUseCase error");
             logsCallback.onMessageLogged("Can't send push event -> token not registered");
+            logsCallback.onMessageLogged("The token was requested again.");
+            DevinoSdk.getInstance().saveToken();
         }
     }
 }

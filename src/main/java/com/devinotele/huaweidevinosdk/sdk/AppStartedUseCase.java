@@ -37,6 +37,8 @@ class AppStartedUseCase extends BaseUC {
             );
         } else {
             logsCallback.onMessageLogged("Application has no push token yet");
+            logsCallback.onMessageLogged("The token was requested again.");
+            DevinoSdk.getInstance().saveToken();
         }
     }
 }

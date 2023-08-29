@@ -54,6 +54,8 @@ class ChangeSubscriptionUseCase extends BaseUC {
         }
         else {
             logsCallback.onMessageLogged("Can't set subscribed -> token not registered");
+            logsCallback.onMessageLogged("The token was requested again.");
+            DevinoSdk.getInstance().saveToken();
         }
     }
 }

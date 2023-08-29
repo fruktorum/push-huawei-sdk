@@ -1,5 +1,6 @@
 package com.devinotele.huaweidevinosdk.sdk;
 
+import android.util.Log;
 import android.util.SparseIntArray;
 
 import com.google.gson.JsonObject;
@@ -114,6 +115,8 @@ class DevinoNetworkRepositoryImpl implements DevinoNetworkRepository {
             Double longitude,
             HashMap<String, Object> customData
     ) {
+        Log.d("DevinoPush", "geo latitude="+latitude);
+        Log.d("DevinoPush", "geo longitude="+longitude);
         return retrofitHelper.geo(latitude, longitude, customData)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread());

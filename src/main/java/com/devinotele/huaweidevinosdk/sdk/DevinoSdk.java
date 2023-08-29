@@ -31,11 +31,11 @@ public class DevinoSdk {
     private String applicationKey, applicationId, appVersion;
     private Boolean isInitedProperly;
     private HelpersPackage hp;
-    private HmsInstanceId hmsInstanceId;
+    HmsInstanceId hmsInstanceId;
     private AGConnectOptions connectOptions;
     private Integer geoFrequency;
     private Integer geoMode;
-    private DevinoLogsCallback logsCallback = getEmptyCallback();
+    DevinoLogsCallback logsCallback = getEmptyCallback();
     private Uri customSound;
 
     public static synchronized DevinoSdk getInstance() throws IllegalStateException {
@@ -76,14 +76,14 @@ public class DevinoSdk {
             instance.applicationId = applicationId;
             instance.appVersion = appVersion;
             instance.connectOptions = connectOptions;
+            instance.hmsInstanceId = hmsInstanceId;
+            instance.isInitedProperly = true;
             instance.hp = new HelpersPackage();
             instance.hp.setSharedPrefsHelper(new SharedPrefsHelper(
                     ctx.getSharedPreferences("", Context.MODE_PRIVATE)
             ));
             instance.hp.setNotificationsHelper(new NotificationsHelper(ctx));
             instance.hp.setDevinoLocationHelper(new DevinoLocationHelper(ctx));
-            instance.hmsInstanceId = hmsInstanceId;
-            instance.isInitedProperly = true;
             instance.hp.getSharedPrefsHelper().saveData(SharedPrefsHelper.KEY_API_SECRET, key);
             instance.hp.setNetworkRepository(new DevinoNetworkRepositoryImpl(
                             instance.applicationKey,
@@ -93,7 +93,15 @@ public class DevinoSdk {
                             instance.logsCallback
                     )
             );
-            instance.saveToken(ctx, instance.hmsInstanceId, instance.logsCallback);
+            instance.hp.setSaveTokenUseCaseHelper(
+                    new SaveTokenUseCase(
+                            instance.hp,
+                            instance.logsCallback,
+                            instance.connectOptions,
+                            instance.hmsInstanceId
+                    )
+            );
+            instance.saveToken();
         }
 
         /**
@@ -207,13 +215,24 @@ public class DevinoSdk {
     }
 
     /**
-     * Shows UI dialog requesting user geo permission
+     * Shows UI dialog requesting user foreground geo permission - ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION
      *
      * @param activity    Calling activity
-     * @param requestCode specify code to handle result in onRequestPermissionsResult() method of your Activity
+     * @param requestCode Specify code to handle result in onRequestPermissionsResult() method of your Activity
      */
-    public void requestGeoPermission(Activity activity, int requestCode) {
-        RequestGeoPermissionUseCase useCase = new RequestGeoPermissionUseCase(instance.hp, logsCallback);
+    public void requestForegroundGeoPermission(Activity activity, int requestCode) {
+        RequestForegroundGeoPermissionUseCase useCase = new RequestForegroundGeoPermissionUseCase(instance.hp, logsCallback);
+        useCase.run(activity, requestCode);
+    }
+
+    /**
+     * Shows UI dialog requesting user background geo permission - ACCESS_BACKGROUND_LOCATION
+     *
+     * @param activity    Calling activity
+     * @param requestCode Specify code to handle result in onRequestPermissionsResult() method of your Activity
+     */
+    public void requestBackgroundGeoPermission(Activity activity, int requestCode) {
+        RequestBackgroundGeoPermissionUseCase useCase = new RequestBackgroundGeoPermissionUseCase(instance.hp, logsCallback);
         useCase.run(activity, requestCode);
     }
 
@@ -308,15 +327,15 @@ public class DevinoSdk {
     }
 
     /**
-     * Shows UI dialog requesting user geo and notification permissions
+     * Shows UI dialog requesting user geo and notification permissions - ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION, POST_NOTIFICATIONS
      *
      * @param activity    Calling activity
      * @param requestCode specify code to handle result in onRequestPermissionsResult() method of your Activity
      */
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     public void requestGeoAndNotificationPermissions(Activity activity, int requestCode) {
-        RequestGeoAndNotificationPermissionUseCase useCase =
-                new RequestGeoAndNotificationPermissionUseCase(instance.hp, logsCallback);
+        RequestForegroundGeoAndNotificationPermissionUseCase useCase =
+                new RequestForegroundGeoAndNotificationPermissionUseCase(instance.hp, logsCallback);
         useCase.run(activity, requestCode);
     }
 
@@ -336,7 +355,7 @@ public class DevinoSdk {
     }
 
     public void updateToken(String pushToken) {
-        SaveTokenUseCase useCase = new SaveTokenUseCase(instance.hp, logsCallback);
+        SaveTokenUseCase useCase = instance.hp.getSaveTokenUseCaseHelper();//new SaveTokenUseCase(instance.hp, logsCallback);
         useCase.run(pushToken);
     }
 
@@ -363,9 +382,9 @@ public class DevinoSdk {
         return instance.hp.getSharedPrefsHelper().getBoolean(SharedPrefsHelper.KEY_TOKEN_REGISTERED);
     }
 
-    private void saveToken(Context context, HmsInstanceId hmsInstanceId, DevinoLogsCallback callback) {
-        SaveTokenUseCase useCase = new SaveTokenUseCase(instance.hp, callback);
-        useCase.run(connectOptions, hmsInstanceId);
+    void saveToken() {
+        SaveTokenUseCase useCase = instance.hp.getSaveTokenUseCaseHelper(); // new SaveTokenUseCase(instance.hp, callback);
+        useCase.run();
     }
 
     private DevinoLogsCallback getEmptyCallback() {

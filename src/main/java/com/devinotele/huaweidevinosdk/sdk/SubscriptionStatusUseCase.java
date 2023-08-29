@@ -39,7 +39,8 @@ class SubscriptionStatusUseCase extends BaseUC {
                     });
         }
         String errorMessage = "Can't get subscription status -> token not registered";
-        logsCallback.onMessageLogged(errorMessage);
+        logsCallback.onMessageLogged("The token was requested again.");
+        DevinoSdk.getInstance().saveToken();
         return Observable.error(new IllegalArgumentException(errorMessage));
     }
 }
