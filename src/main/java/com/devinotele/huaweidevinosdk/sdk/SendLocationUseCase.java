@@ -19,10 +19,12 @@ class SendLocationUseCase extends BaseUC {
                 sharedPrefsHelper.getHashMap(SharedPrefsHelper.KEY_CUSTOM_DATA);
         trackSubscription(
                 devinoLocationHelper.getNewLocation()
-                        .flatMap(location -> networkRepository.geo(
-                                location.getLatitude(),
-                                location.getLongitude(),
-                                customData)
+                        .flatMap(location ->
+                                networkRepository.geo(
+                                        location.getLatitude(),
+                                        location.getLongitude(),
+                                        customData
+                                )
                         )
                         .subscribe(
                                 json -> {

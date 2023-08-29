@@ -117,6 +117,7 @@ class DevinoNetworkRepositoryImpl implements DevinoNetworkRepository {
     ) {
         Log.d("DevinoPush", "geo latitude="+latitude);
         Log.d("DevinoPush", "geo longitude="+longitude);
+        Log.d("DevinoPush", "geo customData="+customData);
         return retrofitHelper.geo(latitude, longitude, customData)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread());

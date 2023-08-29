@@ -37,10 +37,6 @@ class DevinoLocationHelper {
 
     @SuppressLint("MissingPermission")
     Single<Location> getNewLocation() {
-        fusedLocationClient.getLocationAvailability().addOnSuccessListener(loc -> {
-            Log.d("DevinoPush", "DevinoLocationHelper isLocationAvailable=" + loc.isLocationAvailable());
-        });
-
         return Single.create(e -> {
             if (ActivityCompat.checkSelfPermission(
                     context,
