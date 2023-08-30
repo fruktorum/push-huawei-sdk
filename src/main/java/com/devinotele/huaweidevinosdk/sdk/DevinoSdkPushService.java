@@ -189,7 +189,7 @@ public class DevinoSdkPushService extends HmsMessageService {
                 .setSound(null)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setChannelId(channelId)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setPriority(NotificationCompat.PRIORITY_MAX);
 
         if (badgeNumber != null && badgeNumber > 0) {
             builder.setNumber(badgeNumber);
@@ -259,7 +259,9 @@ public class DevinoSdkPushService extends HmsMessageService {
                 @Override
                 public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                     if (bigPicture)
-                        builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(bitmap));
+                        builder.setStyle(new NotificationCompat.BigPictureStyle()
+                                .bigPicture(bitmap)
+                                .bigLargeIcon((Bitmap) null));
                     builder.setLargeIcon(bitmap);
                     showNotification(builder, soundUri);
                 }
