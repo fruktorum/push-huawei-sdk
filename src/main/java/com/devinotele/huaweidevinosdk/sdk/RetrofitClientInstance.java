@@ -11,10 +11,15 @@ class RetrofitClientInstance {
     private static Retrofit retrofit;
     private static volatile String BASE_URL = "https://integrationapi.net/push/sdk/";
     private static final OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+    private static volatile String CURRENT_REQUEST_URL = "";
 
     public void setApiBaseUrl(String newApiBaseUrl) {
         BASE_URL = newApiBaseUrl;
         if (retrofit != null) retrofit = retrofit.newBuilder().baseUrl(BASE_URL).build();
+    }
+
+    public String getCurrentRequestUrl() {
+        return CURRENT_REQUEST_URL;
     }
 
     static Retrofit getRetrofitInstance(final String apiKey) {
@@ -27,6 +32,7 @@ class RetrofitClientInstance {
 
             httpClient.addInterceptor(chain -> {
                 Request original = chain.request();
+                CURRENT_REQUEST_URL = chain.request().url().toString();
                 Request request = original.newBuilder()
                         .header("x-api-key", apiKey)
                         .header("Content-Type", "application/json")

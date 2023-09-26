@@ -11,11 +11,13 @@ import retrofit2.HttpException;
 class PushEventUseCase extends BaseUC {
 
     private final DevinoLogsCallback logsCallback;
-    private final String eventTemplate = "Push event (%s, %s, %s) ";
+    private final String eventTemplate = "Push event (%s, %s, %s): ";
+    private final RetrofitClientInstance retrofitClientInstance;
 
     PushEventUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
         logsCallback = callback;
+        retrofitClientInstance = new RetrofitClientInstance();
     }
 
     void run(String pushId, String actionType, String actionId) {
@@ -31,11 +33,14 @@ class PushEventUseCase extends BaseUC {
                             json -> {
                                 logsCallback.onMessageLogged(
                                         String.format(
-                                                eventTemplate,
+                                                eventTemplate
+                                                        + retrofitClientInstance.getCurrentRequestUrl(),
                                                 pushId,
                                                 actionType,
                                                 actionId
-                                        ) + " -> " + json.toString()
+                                        )
+                                                + " -> "
+                                                + json.toString()
                                 );
                             },
                             throwable -> {
@@ -43,21 +48,27 @@ class PushEventUseCase extends BaseUC {
                                     logsCallback.onMessageLogged(
                                             getErrorMessage(
                                                     String.format(
-                                                            eventTemplate,
+                                                            eventTemplate
+                                                                    + retrofitClientInstance.getCurrentRequestUrl(),
                                                             pushId,
                                                             actionType,
                                                             actionId
-                                                    ) + " -> ",
-                                                    ((HttpException) throwable))
+                                                    )
+                                                            + " -> ",
+                                                    ((HttpException) throwable)
+                                            )
                                     );
                                 else
                                     logsCallback.onMessageLogged(
                                             String.format(
-                                                    eventTemplate,
+                                                    eventTemplate
+                                                            + retrofitClientInstance.getCurrentRequestUrl(),
                                                     pushId,
                                                     actionType,
                                                     actionId
-                                            ) + " -> " + throwable.getMessage()
+                                            )
+                                                    + " -> "
+                                                    + throwable.getMessage()
                                     );
                             }
                     )

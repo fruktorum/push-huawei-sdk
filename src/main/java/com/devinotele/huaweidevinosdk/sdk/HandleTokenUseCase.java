@@ -18,13 +18,15 @@ class HandleTokenUseCase extends BaseUC {
     private final DevinoLogsCallback logsCallback;
     private final String phone;
     private final String email;
-    private final String event = "Register token (put) ";
+    private final String event = "Register token (put): ";
+    private final RetrofitClientInstance retrofitClientInstance;
 
     HandleTokenUseCase(HelpersPackage hp, DevinoLogsCallback callback, String phone, String email) {
         super(hp);
         logsCallback = callback;
         this.phone = phone;
         this.email = email;
+        retrofitClientInstance = new RetrofitClientInstance();
     }
 
     void run(AGConnectOptions connectOptions, HmsInstanceId hmsInstanceId) {
@@ -66,18 +68,27 @@ class HandleTokenUseCase extends BaseUC {
                                     SharedPrefsHelper.KEY_TOKEN_REGISTERED,
                                     true
                             );
-                            logsCallback.onMessageLogged(event + " -> " + json.toString());
+                            logsCallback.onMessageLogged(event
+                                    + retrofitClientInstance.getCurrentRequestUrl()
+                                    + " -> "
+                                    + json.toString());
                         },
                         throwable -> {
                             if (throwable instanceof HttpException)
                                 logsCallback.onMessageLogged(
                                         getErrorMessage(
-                                                event + " -> ",
-                                                ((HttpException) throwable))
+                                                event
+                                                        + retrofitClientInstance.getCurrentRequestUrl()
+                                                        + " -> ",
+                                                ((HttpException) throwable)
+                                        )
                                 );
                             else
                                 logsCallback.onMessageLogged(
-                                        event + " -> " + throwable.getMessage()
+                                        event
+                                                + retrofitClientInstance.getCurrentRequestUrl()
+                                                + " -> "
+                                                + throwable.getMessage()
                                 );
                         }
                 )

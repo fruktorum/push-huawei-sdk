@@ -11,11 +11,13 @@ import retrofit2.HttpException;
 class CustomEventUseCase extends BaseUC {
 
     private final DevinoLogsCallback logsCallback;
-    private final String eventTemplate = "Custom event (%s) ";
+    private final String eventTemplate = "Custom event (%s): ";
+    private final RetrofitClientInstance retrofitClientInstance;
 
     CustomEventUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
         logsCallback = callback;
+        retrofitClientInstance = new RetrofitClientInstance();
     }
 
     @SuppressLint("CheckResult")
@@ -30,26 +32,34 @@ class CustomEventUseCase extends BaseUC {
                     .subscribe(
                             json -> logsCallback.onMessageLogged(
                                     String.format(
-                                            eventTemplate,
+                                            eventTemplate
+                                                    + retrofitClientInstance.getCurrentRequestUrl(),
                                             eventName
-                                    ) + " -> " + json.toString()
+                                    )
+                                            + " -> "
+                                            + json.toString()
                             ),
                             throwable -> {
                                 if (throwable instanceof HttpException)
                                     logsCallback.onMessageLogged(
                                             getErrorMessage(
                                                     String.format(
-                                                            eventTemplate,
+                                                            eventTemplate
+                                                                    + retrofitClientInstance.getCurrentRequestUrl(),
                                                             eventName
                                                     ),
-                                                    ((HttpException) throwable))
+                                                    ((HttpException) throwable)
+                                            )
                                     );
                                 else
                                     logsCallback.onMessageLogged(
                                             String.format(
-                                                    eventTemplate,
+                                                    eventTemplate
+                                                            + retrofitClientInstance.getCurrentRequestUrl(),
                                                     eventName
-                                            ) + " -> " + throwable.getMessage()
+                                            )
+                                                    + " -> "
+                                                    + throwable.getMessage()
                                     );
                             }
                     )

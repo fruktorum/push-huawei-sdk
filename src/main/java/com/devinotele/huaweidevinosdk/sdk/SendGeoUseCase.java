@@ -11,16 +11,18 @@ import retrofit2.HttpException;
 class SendGeoUseCase extends BaseUC {
 
     private final DevinoLogsCallback logsCallback;
-    private final String eventTemplate = "Geo (%s, %s) ";
+    private final String eventTemplate = "Geo (%s, %s): ";
+    private final RetrofitClientInstance retrofitClientInstance;
 
     SendGeoUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
         logsCallback = callback;
+        retrofitClientInstance = new RetrofitClientInstance();
     }
 
     void run(Double latitude, Double longitude) {
-        Log.d("DevinoPush", "SendGeoUseCase latitude="+latitude);
-        Log.d("DevinoPush", "SendGeoUseCase longitude="+longitude);
+        Log.d("DevinoPush", "SendGeoUseCase latitude=" + latitude);
+        Log.d("DevinoPush", "SendGeoUseCase longitude=" + longitude);
         String token = sharedPrefsHelper.getString(SharedPrefsHelper.KEY_PUSH_TOKEN);
         HashMap<String, Object> customData =
                 sharedPrefsHelper.getHashMap(SharedPrefsHelper.KEY_CUSTOM_DATA);
@@ -32,10 +34,13 @@ class SendGeoUseCase extends BaseUC {
                             json -> {
                                 logsCallback.onMessageLogged(
                                         String.format(
-                                                eventTemplate,
+                                                eventTemplate
+                                                        + retrofitClientInstance.getCurrentRequestUrl(),
                                                 latitude,
                                                 longitude
-                                        ) + " -> " + json.toString()
+                                        )
+                                                + " -> "
+                                                + json.toString()
                                 );
                                 Log.d("DevinoPush", "SendGeoUseCase json="+json);
                             },
@@ -44,19 +49,25 @@ class SendGeoUseCase extends BaseUC {
                                     logsCallback.onMessageLogged(
                                             getErrorMessage(
                                                     String.format(
-                                                            eventTemplate,
+                                                            eventTemplate
+                                                                    + retrofitClientInstance.getCurrentRequestUrl(),
                                                             latitude,
                                                             longitude
-                                                    ) + " -> ",
-                                                    ((HttpException) throwable))
+                                                    )
+                                                            + " -> ",
+                                                    ((HttpException) throwable)
+                                            )
                                     );
                                 else
                                     logsCallback.onMessageLogged(
                                             String.format(
-                                                    eventTemplate,
+                                                    eventTemplate
+                                                            + retrofitClientInstance.getCurrentRequestUrl(),
                                                     latitude,
                                                     longitude
-                                            ) + " -> " + throwable.getMessage()
+                                            )
+                                                    + " -> "
+                                                    + throwable.getMessage()
                                     );
                             }
                     )

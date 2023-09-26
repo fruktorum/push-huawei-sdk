@@ -9,11 +9,13 @@ import retrofit2.HttpException;
 class ChangeSubscriptionUseCase extends BaseUC {
 
     private final DevinoLogsCallback logsCallback;
-    private final String eventTemplate = "Set subscribed (%s)";
+    private final String eventTemplate = "Set subscribed (%s): ";
+    private final RetrofitClientInstance retrofitClientInstance;
 
     ChangeSubscriptionUseCase(HelpersPackage hp, DevinoLogsCallback callback) {
         super(hp);
         logsCallback = callback;
+        retrofitClientInstance = new RetrofitClientInstance();
     }
 
     void run(Boolean subscribed) {
@@ -28,25 +30,33 @@ class ChangeSubscriptionUseCase extends BaseUC {
                     .subscribe(
                             json -> logsCallback.onMessageLogged(
                                     String.format(
-                                            eventTemplate,
-                                            subscribed.toString()) + " -> " + json.toString()
+                                            eventTemplate
+                                                    + retrofitClientInstance.getCurrentRequestUrl(),
+                                            subscribed.toString())
+                                            + " -> "
+                                            + json.toString()
                             ),
                             throwable -> {
                                 if (throwable instanceof HttpException)
                                     logsCallback.onMessageLogged(
                                             getErrorMessage(
                                                     String.format(
-                                                            eventTemplate,
+                                                            eventTemplate
+                                                                    + retrofitClientInstance.getCurrentRequestUrl(),
                                                             subscribed.toString()
                                                     ),
-                                                    ((HttpException) throwable))
+                                                    ((HttpException) throwable)
+                                            )
                                     );
                                 else
                                     logsCallback.onMessageLogged(
                                             String.format(
-                                                    eventTemplate,
+                                                    eventTemplate
+                                                            + retrofitClientInstance.getCurrentRequestUrl(),
                                                     subscribed.toString()
-                                            ) + " -> " + throwable.getMessage()
+                                            )
+                                                    + " -> "
+                                                    + throwable.getMessage()
                                     );
                             }
                     )
