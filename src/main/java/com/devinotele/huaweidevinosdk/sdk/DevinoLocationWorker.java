@@ -2,10 +2,13 @@ package com.devinotele.huaweidevinosdk.sdk;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.JobIntentService;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 import java.util.HashMap;
 
@@ -15,17 +18,21 @@ import io.reactivex.schedulers.Schedulers;
 /**
  * This class is used to send geo periodically, when setup with library
  */
-public class DevinoLocationIntentService extends JobIntentService {
+public class DevinoLocationWorker extends Worker {
 
-    private static final int JOB_ID = 1000;
+    public DevinoLocationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+        super(context, workerParams);
+    }
 
-    static void enqueueWork(Context ctx, Intent intent) {
-        enqueueWork(ctx, DevinoLocationIntentService.class, JOB_ID, intent);
+    static void enqueueLocationWork(Context ctx) {
+        WorkRequest worker = new OneTimeWorkRequest.Builder(DevinoLocationWorker.class).build();
+        WorkManager.getInstance(ctx).enqueue(worker);
     }
 
     @SuppressLint("CheckResult")
+    @NonNull
     @Override
-    protected void onHandleWork(@NonNull Intent intent) {
+    public Result doWork() {
 
         DevinoLocationHelper devinoLocationHelper = new DevinoLocationHelper(getApplicationContext());
         devinoLocationHelper.getNewLocation()
@@ -57,6 +64,7 @@ public class DevinoLocationIntentService extends JobIntentService {
                 );
         int interval = helper.getInteger(SharedPrefsHelper.KEY_GPS_INTERVAL);
         DevinoLocationReceiver.setAlarm(getApplicationContext(), interval);
-        stopSelf();
+
+        return Result.success();
     }
 }

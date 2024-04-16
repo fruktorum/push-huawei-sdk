@@ -116,6 +116,10 @@ public class DevinoSdk {
         }
     }
 
+    protected DevinoLogsCallback getLogCallBack() {
+        return logsCallback;
+    }
+
     /**
      * Register callback to get library messages
      *

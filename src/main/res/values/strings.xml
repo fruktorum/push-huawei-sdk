@@ -1,3 +1,5 @@
 <resources>
+    <string name="subscribed_geo_interval">Subscribed geo with interval: %d %s</string>
+    <string name="min">min</string>
     <string name="app_name">Devino SDK</string>
 </resources>
