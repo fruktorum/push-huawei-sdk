@@ -14,7 +14,7 @@
         <activity
             android:name="com.devinotele.huaweidevinosdk.sdk.NotificationTrampolineActivity"
             android:noHistory="true"
-            android:theme="@style/Theme.Transparent"></activity>
+            android:theme="@style/Theme.Transparent" />
 
         <receiver android:name="com.devinotele.huaweidevinosdk.sdk.DevinoPushReceiver" />
 
