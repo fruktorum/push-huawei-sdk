@@ -13,8 +13,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
+import android.media.AudioAttributes;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -197,7 +196,7 @@ public class DevinoSdkPushService extends HmsMessageService {
                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE
                 );
             }
-            
+
         } else {
             defaultPendingIntent = PendingIntent.getBroadcast(
                     getApplicationContext(),
@@ -214,7 +213,7 @@ public class DevinoSdkPushService extends HmsMessageService {
                 PendingIntent.FLAG_IMMUTABLE
         );
 
-        createNotificationChannel();
+        createNotificationChannel(soundUri);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
                 .setContentTitle(title)
@@ -222,7 +221,6 @@ public class DevinoSdkPushService extends HmsMessageService {
                 .setAutoCancel(true)
                 .setContentIntent(defaultPendingIntent)
                 .setDeleteIntent(deletePendingIntent)
-                .setSound(null)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setChannelId(channelId)
                 .setPriority(NotificationCompat.PRIORITY_MAX);
@@ -301,20 +299,20 @@ public class DevinoSdkPushService extends HmsMessageService {
                                 .bigPicture(bitmap)
                                 .bigLargeIcon((Bitmap) null));
                     builder.setLargeIcon(bitmap);
-                    showNotification(builder, soundUri);
+                    showNotification(builder);
                 }
 
                 @Override
                 public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-                    showNotification(builder, soundUri);
+                    showNotification(builder);
                 }
             });
         } else {
-            showNotification(builder, soundUri);
+            showNotification(builder);
         }
     }
 
-    private void showNotification(NotificationCompat.Builder builder, Uri soundUri) {
+    private void showNotification(NotificationCompat.Builder builder) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
 
         // Костыль на проверку версий, странное поведение на андроидах ниже 13,
@@ -334,23 +332,11 @@ public class DevinoSdkPushService extends HmsMessageService {
             Log.e(LOG_TAG, "permission error Android " + Build.VERSION.SDK_INT);
         }
 
-        playRingtone(soundUri);
         notificationManager.notify(113, builder.build());
         Log.d(LOG_TAG, "notify");
     }
 
-    private void playRingtone(Uri customSound) {
-        Uri notificationSound =
-                customSound != null
-                        ? customSound
-                        : RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), notificationSound);
-        if (ringtone != null) {
-            ringtone.play();
-        }
-    }
-
-    private void createNotificationChannel() {
+    private void createNotificationChannel(Uri sound) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel notificationChannel =
@@ -359,9 +345,18 @@ public class DevinoSdkPushService extends HmsMessageService {
             notificationChannel.setVibrationPattern(
                     new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400}
             );
-            notificationChannel.setSound(null, null);
+
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+            if (sound != null) {
+                AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .build();
+                notificationChannel.setSound(sound, audioAttributes);
+            }
+
             notificationManager.createNotificationChannel(notificationChannel);
         }
     }
