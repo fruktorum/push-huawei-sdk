@@ -14,6 +14,8 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.AudioAttributes;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -225,6 +227,10 @@ public class DevinoSdkPushService extends HmsMessageService {
                 .setChannelId(channelId)
                 .setPriority(NotificationCompat.PRIORITY_MAX);
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            builder.setSound(null);
+        }
+
         if (badgeNumber != null && badgeNumber > 0) {
             builder.setNumber(badgeNumber);
         }
@@ -299,20 +305,20 @@ public class DevinoSdkPushService extends HmsMessageService {
                                 .bigPicture(bitmap)
                                 .bigLargeIcon((Bitmap) null));
                     builder.setLargeIcon(bitmap);
-                    showNotification(builder);
+                    showNotification(builder, soundUri);
                 }
 
                 @Override
                 public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-                    showNotification(builder);
+                    showNotification(builder, soundUri);
                 }
             });
         } else {
-            showNotification(builder);
+            showNotification(builder, soundUri);
         }
     }
 
-    private void showNotification(NotificationCompat.Builder builder) {
+    private void showNotification(NotificationCompat.Builder builder, Uri soundUri) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
 
         // Костыль на проверку версий, странное поведение на андроидах ниже 13,
@@ -332,8 +338,23 @@ public class DevinoSdkPushService extends HmsMessageService {
             Log.e(LOG_TAG, "permission error Android " + Build.VERSION.SDK_INT);
         }
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            playRingtone(soundUri);
+        }
+
         notificationManager.notify(113, builder.build());
         Log.d(LOG_TAG, "notify");
+    }
+
+    private void playRingtone(Uri customSound) {
+        Uri notificationSound =
+                customSound != null
+                        ? customSound
+                        : RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), notificationSound);
+        if (ringtone != null) {
+            ringtone.play();
+        }
     }
 
     private void createNotificationChannel(Uri sound) {
