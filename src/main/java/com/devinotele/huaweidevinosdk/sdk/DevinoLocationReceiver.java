@@ -16,7 +16,7 @@ public class DevinoLocationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        DevinoLocationIntentService.enqueueWork(context, intent);
+        DevinoLocationWorker.enqueueLocationWork(context);
     }
 
     static void cancelAlarm(Context context) {
@@ -34,10 +34,20 @@ public class DevinoLocationReceiver extends BroadcastReceiver {
         int sdkInt = Build.VERSION.SDK_INT;
         PendingIntent intent = getPendingIntent(context);
 
-        if (sdkInt < Build.VERSION_CODES.KITKAT) alarm.set(AlarmManager.RTC_WAKEUP, when, intent);
-        else if (sdkInt < Build.VERSION_CODES.M)
+        if (sdkInt < Build.VERSION_CODES.KITKAT) {
+            alarm.set(AlarmManager.RTC_WAKEUP, when, intent);
+        } else if (sdkInt < Build.VERSION_CODES.M) {
             alarm.setExact(AlarmManager.RTC_WAKEUP, when, intent);
-        else alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, when, intent);
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                if (alarm.canScheduleExactAlarms()) {
+                    alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, when, intent);
+                }
+            } else {
+                alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, when, intent);
+            }
+        }
+
     }
 
     static PendingIntent getPendingIntent(Context context) {

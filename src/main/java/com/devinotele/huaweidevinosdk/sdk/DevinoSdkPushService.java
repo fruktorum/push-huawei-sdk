@@ -2,6 +2,7 @@ package com.devinotele.huaweidevinosdk.sdk;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityOptions;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,11 +11,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.media.AudioAttributes;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.ColorInt;
@@ -38,6 +42,8 @@ import java.util.Map;
 public class DevinoSdkPushService extends HmsMessageService {
 
     Gson gson = new Gson();
+
+    private static final String LOG_TAG = "DevinoPush";
     private final String channelId = "devino_push";
     @DrawableRes
     static Integer defaultNotificationIcon = R.drawable.ic_grey_circle;
@@ -47,13 +53,16 @@ public class DevinoSdkPushService extends HmsMessageService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        if (remoteMessage.getDataOfMap().size() > 0) {
-
+        if (!remoteMessage.getDataOfMap().isEmpty()) {
             Map<String, String> data = remoteMessage.getDataOfMap();
-            Log.d("DevinoPush", "data = " + data);
+            Log.d(LOG_TAG, "data = " + data);
 
             String pushId = data.get("pushId");
-            if (pushId == null) return;
+
+            if (pushId == null) {
+                Log.e(LOG_TAG, "pushId is null");
+                return;
+            }
 
             String image = data.get("image");
             String smallIcon = data.get("smallIcon");
@@ -61,17 +70,22 @@ public class DevinoSdkPushService extends HmsMessageService {
             String title = data.get("title");
             String body = data.get("body");
 
-            if (title == null || body == null) return;
+            if (title == null || body == null) {
+                Log.e(LOG_TAG, "Returning body or title null");
+                return;
+            }
 
             String badge = data.get("badge");
             int badgeNumber = 0;
+
             if (badge != null) {
                 badgeNumber = Integer.parseInt(badge);
             }
-            Log.d("DevinoPush", "badgeNumber =  " + badgeNumber);
+
+            Log.d(LOG_TAG, "badgeNumber =  " + badgeNumber);
 
             String action = data.get("action");
-            Log.d("DevinoPush", "action =  " + action);
+            Log.d(LOG_TAG, "action =  " + action);
 
             String buttonsJson = data.get("buttons");
             Type listType = new TypeToken<List<PushButton>>() {
@@ -81,7 +95,7 @@ public class DevinoSdkPushService extends HmsMessageService {
             String customDataString = data.get("customData");
             if (customDataString != null) {
                 DevinoSdk.getInstance().saveCustomDataFromPushJson(customDataString);
-                Log.d("DevinoPush", "CustomDataString =  " + customDataString);
+                Log.d(LOG_TAG, "CustomDataString =  " + customDataString);
             }
 
             String sound = data.get("sound");
@@ -91,7 +105,7 @@ public class DevinoSdkPushService extends HmsMessageService {
             } else {
                 soundUri = DevinoSdk.getInstance().getSound();
             }
-            Log.d("DevinoPush", "soundUri =  " + soundUri);
+            Log.d(LOG_TAG, "soundUri =  " + soundUri);
 
             boolean isSilent = "true".equalsIgnoreCase(data.get("silentPush"));
             if (!isSilent) {
@@ -106,10 +120,15 @@ public class DevinoSdkPushService extends HmsMessageService {
                         soundUri,//sound,
                         pushId,
                         action,
-                        badgeNumber);
+                        badgeNumber
+                );
+            } else {
+                Log.e(LOG_TAG, "Returning is not silent");
             }
 
             DevinoSdk.getInstance().pushEvent(pushId, DevinoSdk.PushStatus.DELIVERED, null);
+        } else {
+            Log.e(LOG_TAG, "Returning data is empty");
         }
     }
 
@@ -156,12 +175,30 @@ public class DevinoSdkPushService extends HmsMessageService {
         PendingIntent defaultPendingIntent;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            defaultPendingIntent = PendingIntent.getActivity(
-                    getApplicationContext(),
-                    0,
-                    activityIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE
-            );
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                Bundle options = ActivityOptions.makeBasic()
+                        .setPendingIntentBackgroundActivityStartMode(
+                                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                        ).toBundle();
+
+                defaultPendingIntent = PendingIntent.getActivity(
+                        getApplicationContext(),
+                        0,
+                        activityIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE,
+                        options
+                );
+
+            } else {
+                defaultPendingIntent = PendingIntent.getActivity(
+                        getApplicationContext(),
+                        0,
+                        activityIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE
+                );
+            }
+
         } else {
             defaultPendingIntent = PendingIntent.getBroadcast(
                     getApplicationContext(),
@@ -178,7 +215,7 @@ public class DevinoSdkPushService extends HmsMessageService {
                 PendingIntent.FLAG_IMMUTABLE
         );
 
-        createNotificationChannel();
+        createNotificationChannel(soundUri);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
                 .setContentTitle(title)
@@ -186,10 +223,13 @@ public class DevinoSdkPushService extends HmsMessageService {
                 .setAutoCancel(true)
                 .setContentIntent(defaultPendingIntent)
                 .setDeleteIntent(deletePendingIntent)
-                .setSound(null)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setChannelId(channelId)
                 .setPriority(NotificationCompat.PRIORITY_MAX);
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            builder.setSound(null);
+        }
 
         if (badgeNumber != null && badgeNumber > 0) {
             builder.setNumber(badgeNumber);
@@ -203,8 +243,8 @@ public class DevinoSdkPushService extends HmsMessageService {
 
         if (iconColor != null) {
             try {
-                Integer color = Integer.getInteger(iconColor);
-                if (color != null) builder.setColor(color);
+                int color = Color.parseColor(iconColor);
+                builder.setColor(color);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -212,13 +252,7 @@ public class DevinoSdkPushService extends HmsMessageService {
             builder.setColor(defaultNotificationIconColor);
         }
 
-        int EXPANDED_TEXT_LENGTH = 49;
-        if (text.length() >= EXPANDED_TEXT_LENGTH) {
-            builder.setStyle(new NotificationCompat.BigTextStyle()
-                    .bigText(text));
-        }
-
-        if (buttons != null && buttons.size() > 0) {
+        if (buttons != null && !buttons.isEmpty()) {
             for (PushButton button : buttons) {
                 if (button.text != null) {
                     Intent buttonActivityIntent = new Intent(this, NotificationTrampolineActivity.class);
@@ -231,7 +265,7 @@ public class DevinoSdkPushService extends HmsMessageService {
                     buttonBroadcastIntent.putExtra(DevinoPushReceiver.KEY_PUSH_ID, pushId);
                     buttonBroadcastIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-                    Log.d("DevinoPush", "button.deeplink =  " + button.deeplink);
+                    Log.d(LOG_TAG, "button.deeplink =  " + button.deeplink);
                     PendingIntent pendingIntent;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         pendingIntent = PendingIntent.getActivity(
@@ -252,6 +286,14 @@ public class DevinoSdkPushService extends HmsMessageService {
                     builder.addAction(R.drawable.ic_grey_circle, button.text, pendingIntent);
                 }
             }
+        }
+
+        int EXPANDED_TEXT_LENGTH = 49;
+        if (text.length() >= EXPANDED_TEXT_LENGTH) {
+
+            builder.setStyle(new NotificationCompat.BigTextStyle()
+                    .bigText(text));
+
         }
 
         if (largeIcon != null) {
@@ -278,16 +320,30 @@ public class DevinoSdkPushService extends HmsMessageService {
 
     private void showNotification(NotificationCompat.Builder builder, Uri soundUri) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED
-        ) {
-            // This permission are guaranteed in the app
-            // through the DevinoSdk.getInstance().requestNotificationPermission() method.
-            return;
+
+        // Костыль на проверку версий, странное поведение на андроидах ниже 13,
+        // NotificationManagerCompat.from(context).areNotificationsEnabled() -
+        // - может отбивать PERMISSION_DENIED при включенных уведомлениях
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED
+            ) {
+                // This permission are guaranteed in the app
+                // through the DevinoSdk.getInstance().requestNotificationPermission() method.
+                Log.e(LOG_TAG, "Returning, permission error Android " + Build.VERSION.SDK_INT);
+                return;
+            }
+        } else {
+            // Нет return'а, см. пометку выше
+            Log.e(LOG_TAG, "permission error Android " + Build.VERSION.SDK_INT);
         }
-        playRingtone(soundUri);
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            playRingtone(soundUri);
+        }
+
         notificationManager.notify(113, builder.build());
-        Log.d("DevinoPush", "notify");
+        Log.d(LOG_TAG, "notify");
     }
 
     private void playRingtone(Uri customSound) {
@@ -301,7 +357,7 @@ public class DevinoSdkPushService extends HmsMessageService {
         }
     }
 
-    private void createNotificationChannel() {
+    private void createNotificationChannel(Uri sound) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel notificationChannel =
@@ -310,9 +366,18 @@ public class DevinoSdkPushService extends HmsMessageService {
             notificationChannel.setVibrationPattern(
                     new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400}
             );
-            notificationChannel.setSound(null, null);
+
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+            if (sound != null) {
+                AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .build();
+                notificationChannel.setSound(sound, audioAttributes);
+            }
+
             notificationManager.createNotificationChannel(notificationChannel);
         }
     }
