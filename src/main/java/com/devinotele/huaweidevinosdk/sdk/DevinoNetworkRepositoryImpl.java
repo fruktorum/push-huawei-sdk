@@ -63,6 +63,11 @@ class DevinoNetworkRepositoryImpl implements DevinoNetworkRepository {
         );
     }
 
+    @Override
+    public void updateRetrofitHelper() {
+        retrofitHelper.updateBaseUrl();
+    }
+
     private Boolean codeToRepeat(int errorCode) {
         return errorCode != 200 && !(errorCode >= 400 && errorCode <= 404);
     }

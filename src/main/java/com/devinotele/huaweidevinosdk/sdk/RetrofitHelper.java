@@ -14,15 +14,27 @@ import io.reactivex.Single;
 
 class RetrofitHelper {
 
-    private final DevinoApi devinoApi;
+    private DevinoApi devinoApi;
     private final String applicationId;
     private String token;
     static final String PLATFORM_KEY = "HUAWEI";
 
+    private final String apiKey;
+
     RetrofitHelper(String apiKey, String applicationId, String token) {
-        devinoApi = RetrofitClientInstance.getRetrofitInstance(apiKey).create(DevinoApi.class);
+        this.apiKey = apiKey;
+
+        createDevinoApi();
         this.applicationId = applicationId;
         this.token = token;
+    }
+
+    private void createDevinoApi() {
+        devinoApi = RetrofitClientInstance.getRetrofitInstance(apiKey).create(DevinoApi.class);
+    }
+
+    void updateBaseUrl() {
+        createDevinoApi();
     }
 
     void setToken(String token) {
