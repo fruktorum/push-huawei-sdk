@@ -9,6 +9,8 @@ import io.reactivex.Single;
 
 interface DevinoNetworkRepository {
 
+    void updateRetrofitHelper();
+
     Observable<JsonObject> registerUser(
             String email,
             String phone,
