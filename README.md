@@ -1,4 +1,6 @@
 НЕ АКТУАЛЬНО
+
+Актуальный репозиторий: 
 https://gitlab.com/fruktorum/android/devino/DevinoPushV1-HuaweiSDK
 
 ## Devino Huawei SDK
