@@ -1,3 +1,6 @@
+НЕ АКТУАЛЬНО
+https://gitlab.com/fruktorum/android/devino/DevinoPushV1-HuaweiSDK
+
 ## Devino Huawei SDK
 
 Devino Huawei SDK has a functionality to handle push notifications
